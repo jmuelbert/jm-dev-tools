@@ -1,0 +1,64 @@
+---
+name: CI - Validate Scripts & Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-scripts:
+    name: Run Linters (Shellcheck, cSpell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python (for pre-commit environment)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies (pre-commit, uv)
+        run: pip install pre-commit uv
+
+      - name: Run pre-commit checks on all files
+        # --all-files is critical here to ensure all scripts are checked, 
+        # not just files modified in the current PR.
+        run: pre-commit run --all-files
+
+  # Run this job on Windows to ensure PS scripts are syntactically sound
+  validate-powershell:
+    name: Validate PowerShell Script Syntax
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PSScriptAnalyzer Check
+        # PSScriptAnalyzer is the standard PowerShell linter
+        run: |
+          Install-Module PSScriptAnalyzer -Scope CurrentUser
+          Invoke-ScriptAnalyzer -Path '.\scripts\*.ps1' -Recurse
+        shell: pwsh
+
+  docs-build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Hatch & uv
+        uses: hatch-examples/setup-hatch@v1 # Use a setup action for convenience
+      - name: Install Docs Environment
+        # This uses uv as configured by Hatch
+        run: hatch env create docs
+
+      - name: Generate Script References (Shellman/PlatyPS output)
+        run: hatch run devguide:gen
+        
+      - name: Build MkDocs Site
+        run: hatch run docs:build
+        
+      # Optional: Add a step to deploy the docs if they build successfully
+      - name: Deploy Documentation (Optional)
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site # MkDocs output directory

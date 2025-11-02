@@ -1,0 +1,37 @@
+repos:
+  # ----------------------------------------------------
+  # 1. Shell Script Linters
+  # ----------------------------------------------------
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    # NOTE: Use the latest stable rev
+    rev: v0.11.0.1
+    hooks:
+      # Check both Bash and PowerShell scripts explicitly
+      - id: shellcheck
+        name: shellcheck (Bash & PS)
+        # Check all .sh files in scripts/ (since they are non-executable)
+        files: '^scripts/.*\.sh$'
+        types: [file]
+        # You'll need to define a custom hook to call shellcheck on .ps1 files if the default doesn't catch them.
+        # Alternatively, ensure the ps1 files have a shebang and are executable.
+        # Given your previous issue, let's focus on .sh for now.
+
+  # ----------------------------------------------------
+  # 2. General Spelling Check (Crucial for scripts/comments)
+  # ----------------------------------------------------
+  - repo: https://github.com/streetsidesoftware/cspell-cli
+    rev: v8.3.0
+    hooks:
+      - id: cspell
+        files: '\.(sh|ps1|md)$' # Check all scripts and README.
+
+  # ----------------------------------------------------
+  # 3. Trailing Whitespace and Line Endings
+  # ----------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-content

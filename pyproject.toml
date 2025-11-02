@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "jm-dev-tools"
+version = "0.1.0"
+description = "Reusable Bash and PowerShell development and automation scripts."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.6.23",
+    "shellman>=1.0.2",
+]
+
+
+
+
+[tool.hatch.envs.docs]
+dependencies = [
+  "mkdocs-material", # Or sphinx, as you prefer
+  # Add other doc dependencies here (e.g., shellman if installed via pip)
+]
+
+[tool.hatch.scripts]
+# A simple way to run the bash script
+devguide:gen = "bash scripts/devguide-generator.sh"
+# A command to build the documentation site
+docs:build = "mkdocs build"
