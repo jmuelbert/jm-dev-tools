@@ -1,0 +1,140 @@
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2024 Jürgen Mülbert <juergen.muelbert@outlook.de>
+---
+version: "0.2"
+language: en  # Set a single default language
+dictionaries:
+  - en_GB
+  - en_US
+  - de-de
+  - es-es
+  - it-it
+  - project-words
+
+# Files to ignore
+ignorePaths:
+  - "**/node_modules"
+  - "**/*.svg"
+  - "**/*.qrc"
+  - .git
+  - .github/config/styles/**
+  - .gitignore
+  - .gitattributes
+  - .vscode
+  - .devcontainer
+  - package-lock.json
+  - pnpm-lock.yaml
+  - cspell.config.yaml
+  - project-words.txt # Exclude the word list itself
+  - LICENSE
+  - LICENSES/
+
+# Files to check
+files:
+  - "**/*.md"
+  - "**/*.markdown"
+  - "**/*.adoc"
+  - "**/*.asciidoc"
+  - "**/*.htm"
+  - "**/*.html"
+  - "**/*.json"
+  - "**/*.yml"
+  - "**/*.yaml"
+  - "**/*.toml"
+
+# Words to always ignore
+words:
+  - jmuelbert
+  - Jürgen
+  - Mülbert
+
+# Words to flag as errors
+flagWords:
+  - hte
+  - canot
+  - cancelled
+
+# CSpell behaviors
+maxNumberOfProblems: 1000
+useGitignore: true
+allowCompoundWords: true
+enableGlobDot: true
+enableFiletypes:
+  - shellscript
+  - gitcommit
+
+# Cache settings
+cache:
+  useCache: true
+  cacheStrategy: content
+
+# Overrides for specific files/globs
+overrides:
+  # French (fr) language-specific content
+  - filename: fr/**/*.md
+    language: en,fr
+  # German (de) language-specific content
+  - filename: de/**/*.md
+    language: en,de
+  # Spanish (es) language-specific content
+  - filename: es/**/*.md
+    language: en,es
+  # Italian (it) language-specific content
+  - filename: it/**/*.md
+    language: en,it
+
+  # General Markdown files that are not language-specific
+  - filename: "**/*.md"
+    language: en
+
+  # Configuration for package.json
+  - filename: package.json
+    languageId: json
+    language: en
+    dictionaries:
+      - npm # Recommended for package.json to check package names
+
+  # Configuration for TOML files
+  - filename: "**/*.toml"
+    languageId: toml
+    language: en
+    dictionaries:
+      - toml # If CSpell has a specific TOML dict, use it
+
+  # Configuration for generic text files
+  - filename: "**/*.txt"
+    languageId: text
+    language: en
+
+  # Configuration for YAML files
+  - filename: "**/*.yaml"
+    languageId: yaml
+    language: en
+
+  # Configuration for executable scripts (no file extension) in a 'bin' directory
+  - filename: bin/*
+    languageId: bash
+    language: en
+    dictionaries:
+      - bash
+      - node
+      - shell
+  - filename: "**/*.sh"
+    language: en
+    dictionaries: [
+      bash,
+      node,
+      shell
+    ]
+
+# Project dictionary definitions
+dictionaryDefinitions:
+  - name: project-words
+    path: ./project-words.txt
+    addWords: true
+
+# Import language dictionaries
+import:
+  - "@cspell/dict-es-es"
+  - "@cspell/dict-de-de"
+  - "@cspell/dict-it-it"

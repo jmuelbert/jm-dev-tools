@@ -1,0 +1,25 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+extends: default
+ignore: |
+  .github/config/styles/
+strict: true
+format: parsable
+
+rules:
+  indentation: disable
+
+  line-length:
+    max: 160
+    allow-non-breakable-inline-mappings: true
+
+  quoted-strings:
+    quote-type: double
+    required: only-when-needed
+
+  trailing-spaces: enable
+
+  # "on:" Should not be used as a truthy value
+  truthy: disable

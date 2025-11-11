@@ -1,0 +1,197 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Pull Request Automation
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - .gitignore
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  commit-lint:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # For checkout
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: 📝 Lint Commit Messages
+        uses: ahmadnassri/action-commit-lint@c46b910837381d1b39c7b7ede72666d7f3e83222  # v2.1.17
+
+  analyze-pr:
+    name: Analyze and Manage Pull Request
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: 🔄 Check Merge Conflicts
+        id: conflicts
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0  # v3.0.3
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          dirtyLabel: "status: has-conflicts"
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          commentOnDirty: |
+            ⚠️ This pull request has conflicts with the target branch. Please resolve the conflicts by following these steps:
+            1. Fetch the latest changes.
+            2. Merge the target branch into your branch.
+            3. Resolve the conflicts.
+            4. Push the changes back.
+
+            Need help? Check the [Contributing Guide](../../CONTRIBUTING.md) or ask for assistance.
+          commentOnClean: |
+            ✅ All conflicts have been resolved. A maintainer will review your PR shortly.
+
+      - name: 📏 Analyze Pull Request Size
+        id: size
+        uses: codelytv/pr-size-labeler@4ec67706cd878fbc1c8db0a5dcd28b6bb412e85a  # v1.10.3
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: size/xs
+          xs_max_size: "10"
+          s_label: size/s
+          s_max_size: "100"
+          m_label: size/m
+          m_max_size: "500"
+          l_label: size/l
+          l_max_size: "1000"
+          xl_label: size/xl
+          fail_if_xl: false
+          message_if_xl: |
+            ⚠️ This PR is quite large (over 1000 lines). Please consider:
+            - Breaking it into smaller, focused PRs
+            - Ensuring all changes are related and well-documented
+            - Adding detailed documentation for reviewers
+
+            Large PRs may require additional review time and scrutiny.
+          files_to_ignore: |
+            **/test/**
+            **/tests/**
+            **/doc/**
+            **/docs/**
+            **/*.md
+            package-lock.json
+            pnpm-lock.yaml
+            uv.lock
+            poetry.lock
+
+      - name: 🏷️ Apply Scope Labels
+        id: labeler
+        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b #v6.0.1
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          configuration-path: .github/config/labeler.yml
+          sync-labels: true
+
+      - name: 📝 Run PR Automation Script
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd   # v8.0.0
+        id: pr-script
+        env:
+          MIN_COVERAGE: 51
+        with:
+          script: |
+            const script = require('./.github/scripts/pr-automation.js');
+            await script.default({ github, context, core });
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+
+      - name: Dependency Review
+        id: review
+        uses: actions/dependency-review-action@595b5aeba73380359d98a5e087f648dbb0edce1b  # v4.7.3
+        with:
+          # This action now runs with the goal of generating output for the report
+          comment-summary-in-pr: false
+          retry-on-snapshot-warnings: true
+          config-file: .github/config/dependency-review-config.yml
+
+      - name: 📊 Generate and Post Report
+        if: always()
+        env:
+          DEPENDENCY_CHANGES: ${{ steps.review.outputs.dependency-changes }}
+          VULNERABLE_CHANGES: ${{ steps.review.outputs.vulnerable-changes }}
+          LICENSE_CHANGES: ${{ steps.review.outputs.invalid-license-changes }}
+          DENIED_CHANGES: ${{ steps.review.outputs.denied-changes }}
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
+        with:
+          script: |
+            const script = require('./.github/scripts/dependency-report.js');
+            await script.default({ github, context, core });
+
+  verify:
+    needs: [commit-lint, analyze-pr, dependency-review]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: ✅ Verify Workflow Completion
+        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
+        with:
+          allowed-skips: commit-lint, analyze-pr, dependency-review
+          jobs: ${{ toJSON(needs) }}

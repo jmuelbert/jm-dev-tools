@@ -1,0 +1,31 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Stale Issues and Pull Requests
+
+on:
+  schedule:
+    - cron: 30 1 * * * # Run at 01:30 UTC daily
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a
+        with:
+          egress-policy: audit
+
+      - name: 📊 Process Stale Issues and PRs
+        uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f  # v10.0.0
+        with:
+          stale-issue-message: This issue hasn't had recent activity.
+          close-issue-message: Closing due to inactivity.
+          days-before-stale: 30
+          days-before-close: 7
+          exempt-issue-labels: priority-high,security,pinned

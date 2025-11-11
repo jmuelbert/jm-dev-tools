@@ -1,0 +1,56 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Issue Management
+
+on:
+  issues:
+    types: [opened, labeled, unlabeled, assigned, reopened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  process-issue:
+    name: Process Issue
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read # For checkout
+      issues: write # For labels, comments, etc.
+      pull-requests: read
+      security-events: write
+      pages: write
+      id-token: write
+
+    outputs:
+      labeled: ${{ steps.triage.outputs.labeled }}
+      priority: ${{ steps.triage.outputs.priority }}
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+
+      - name: 🚀 Run Issue Automation
+        id: triage
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
+        with:
+          # Use a separate file for the script to improve readability and maintainability
+          script: |
+            const script = require('./.github/scripts/issue-handler.js');
+            await script.default({ github, context, core });

@@ -1,0 +1,112 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Repository Maintenance
+
+on:
+  schedule:
+    - cron: 0 0 * * 0 # Run at midnight every Sunday
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  maintenance:
+    name: Repository Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 🧹 Process Stale Items
+        id: stale
+        uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f  # v10.0.0
+        with:
+          stale-issue-message: |
+            This issue has been automatically marked as stale due to 30 days of inactivity.
+            It will be closed in 5 days if no further activity occurs.
+
+            - Comment or update to keep this open
+            - Remove `stale` label to prevent closure
+            - Close this issue if it's resolved
+          close-issue-message: |
+            This issue has been closed due to inactivity.
+            Please reopen if still relevant.
+
+          stale-pr-message: |
+            This PR has been marked as stale due to 45 days of inactivity.
+            It will be closed in 10 days if no further activity occurs.
+
+            - Comment or update to keep this open
+            - Remove `stale` label to prevent closure
+          close-pr-message: |
+            This PR has been closed due to inactivity.
+            Feel free to reopen if you'd like to continue working on it.
+
+          days-before-issue-stale: 30
+          days-before-pr-stale: 45
+          days-before-issue-close: 5
+          days-before-pr-close: 10
+
+          stale-issue-label: stale
+          stale-pr-label: stale
+
+          exempt-issue-labels: |
+            security
+            pinned
+            bug
+            enhancement
+          exempt-pr-labels: |
+            security
+            pinned
+            dependencies
+
+          delete-branch: true
+          enable-statistics: true
+
+      - name: 🔐 Lock Inactive Threads
+        id: lock
+        uses: dessant/lock-threads@1bf7ec25051fe7c00bdd17e6a7cf3d7bfb7dc771  # v5.0.1
+        with:
+          issue-inactive-days: 182 # 6 months
+          pr-inactive-days: 90 # 3 months
+          issue-comment: |
+            This issue has been locked due to 6 months of inactivity.
+            Please open a new issue if you have a similar problem.
+          pr-comment: |
+            This PR has been locked due to 3 months of inactivity.
+            Please open a new PR if you want to make similar changes.
+          log-output: true
+          exclude-any-issue-labels: |
+            keep-unlocked
+            security
+          exclude-any-pr-labels: |
+            keep-unlocked
+            security
+            dependencies
+
+      - name: 📢 Maintenance Completed
+        run: |
+          echo "Maintenance workflow finished on $(date)."
+          echo "Check workflow logs for stale/locked issues and PRs."

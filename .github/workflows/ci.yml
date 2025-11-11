@@ -21,7 +21,7 @@ jobs:
         run: pip install pre-commit uv
 
       - name: Run pre-commit checks on all files
-        # --all-files is critical here to ensure all scripts are checked, 
+        # --all-files is critical here to ensure all scripts are checked,
         # not just files modified in the current PR.
         run: pre-commit run --all-files
 
@@ -51,10 +51,10 @@ jobs:
 
       - name: Generate Script References (Shellman/PlatyPS output)
         run: hatch run devguide:gen
-        
+
       - name: Build MkDocs Site
         run: hatch run docs:build
-        
+
       # Optional: Add a step to deploy the docs if they build successfully
       - name: Deploy Documentation (Optional)
         if: github.ref == 'refs/heads/main'
