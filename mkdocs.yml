@@ -7,13 +7,13 @@
 # See: https://www.mkdocs.org/user-guide/configuration/
 
 # --- Project Information ---
-site_name: jm-bde
-site_url: https://io.github.org/jmuelbert/jm-bde/
+site_name: jm-dev-tools
+site_url: https://io.github.org/jmuelbert/jm-dev-tools/
 site_description: >-
   A modern Python project template with comprehensive tooling.
 # Repository
-repo_name: jmuelbert/jm-bde
-repo_url: https://github.com/jmuelbert/jm-bde/
+repo_name: jmuelbert/jm-dev-tools
+repo_url: https://github.com/jmuelbert/jm-dev-tools/
 edit_uri: blob/main/docs/
 # Copyright
 copyright: Copyright &copy; 2025 - now Jürgen Mülbert
@@ -86,24 +86,21 @@ plugins:
   include-markdown: {}
   mike:
     alias_type: copy
-  mkdocs-typer2:
-    pretty: true
   mkdocstrings:
-    handlers:
-      python:
-        paths: [src]
-        options:
-          show_source: false
-          show_root_heading: true
-          show_object_full_path: false
-          show_category_heading: true
-          show_bases: true
-          show_submodules: true
-          show_signature: true
-          show_signature_annotations: true
-          heading_level: 2
-          separate_signature: true
-          filters: ["!^_"]
+    default_handler: python
+    paths: [src]
+    options:
+      show_source: false
+      show_root_heading: true
+      show_object_full_path: false
+      show_category_heading: true
+      show_bases: true
+      show_submodules: true
+      show_signature: true
+      show_signature_annotations: true
+      heading_level: 2
+      separate_signature: true
+      filters: ["!^_"]
   i18n:
     docs_structure: folder
     fallback_to_default: true
@@ -191,7 +188,6 @@ extra:
 
 watch:
   - mkdocs.yml
-  - src/
   - docs/
 
 # Page tree

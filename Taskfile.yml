@@ -12,20 +12,18 @@ version: "3"
 # -----------------------------------------------------------
 vars:
   LOG: warn
-  DOMAIN: jm_bde
-  SRC_DIR: src
-  LOCALES_DIR: "{{.SRC_DIR}}/{{.DOMAIN}}/locales"
-  GUI_DIR: "{{.SRC_DIR}}/{{.DOMAIN}}/gui"
-  GUI_TRANSLATIONS_DIR: "{{.GUI_DIR}}/translations"
-  QML_DIR: "{{.GUI_DIR}}/qml"
+  DOMAIN: jm-dev-tools
+  SRC_DIR: scripts
+  DOCS_DIR: docs
+
   LANGUAGES: en es fr de it pt pt_BR ru zh_CN zh_TW ja ko hi tr ar vi pl nl sv
   PYTHON: python3
   TARGET_LANGUAGE: ""
 
   # --- NEW MULTI-LANGUAGE VARIABLES ---
-  LANG: ""              # Language identifier (e.g., cpp, rust, python) - MANDATORY for build/run
-  EXECUTABLE_NAME: app  # Default name for compiled binary
-  BUILD_DIR: .          # Directory where compilation takes place (relative to Taskfile)
+  LANG: "" # Language identifier (e.g., cpp, rust, python) - MANDATORY for build/run
+  EXECUTABLE_NAME: app # Default name for compiled binary
+  BUILD_DIR: . # Directory where compilation takes place (relative to Taskfile)
 
 # -----------------------------------------------------------
 # 🪵 LOGGING HELPERS
@@ -80,23 +78,23 @@ tasks:
     cmds:
       - task: _log
         vars: { MSG: "🔧 Performs full project setup (dependencies, hooks, dev guide).", TYPE: info }
-      - uv install
-      - task devguide-generate
-      - task: hooks:install
+      - uv venv # NEU: Umgebung explizit erstellen
+      - uv pip install ".[dev]" # KORREKT: Installiert die [dev] Gruppe aus pyproject.toml
+      - task: devguide-generate
       - task: pnpm:install
       - task: _log
-        vars: { MSG: ✅ Environment reset complete., TYPE: success}
+        vars: { MSG: ✅ Environment reset complete., TYPE: success }
 
   clean:
     desc: Clean caches, builds, and translations
     cmds:
       - task: _log
-        vars: { MSG: "🧹 Cleaning caches, builds, and translation files...", TYPE: info }
-      - rm -rf dist build htmlcov site .cache .ropeproject .pytest_cache .mypy_cache .ruff_cache .venv coverage.xml .coverage
-      - rm -rf {{.LOCALES_DIR}}/*/LC_MESSAGES/*.mo
-      - rm -rf {{.LOCALES_DIR}}/*/LC_MESSAGES/*.po
-      - rm -rf {{.GUI_TRANSLATIONS_DIR}}/*.ts {{.GUI_TRANSLATIONS_DIR}}/*.qm
-      - rm -f {{.GUI_DIR}}/resources_rc.py
+        vars:
+          {
+            MSG: "🧹 Cleaning caches, builds, and translation files...",
+            TYPE: info
+          }
+      - rm -rf dist build htmlcov site .cache .ropeproject .venv coverage.xml .coverage uv.lock
       - rm -rf .venv
       # --- Clean devguide
       - rm -f .tmp/devguide-generator.sh
@@ -113,32 +111,14 @@ tasks:
     desc: Reset environment
     cmds:
       - task: _log
-        vars: { MSG: ♻️ Resetting environment..., TYPE: info}
+        vars: { MSG: ♻️ Resetting environment..., TYPE: info }
       - rm -rf .venv
-      - uv install
+      - uv venv
+      - uv pip install ".[dev]"
       - task devguide-generate
-      - task: hooks:install
       - task: pnpm:install
       - task: _log
-        vars: { MSG: ✅ Environment reset complete., TYPE: success}
-
-  # ----------------------
-  # Pre-commit Hooks
-  # ----------------------
-  hooks:install:
-    desc: Install pre-commit hooks
-    cmds:
-      - task: _log
-        vars: { MSG: 🔧 Installing pre-commit hooks..., TYPE: info}
-      - uv run pre-commit install
-      - uv run pre-commit install --hook-type commit-msg
-
-  hooks:update:
-    desc: Update pre-commit hooks
-    cmds:
-      - task: _log
-        vars: { MSG: 🔧 Updating pre-commit hooks..., TYPE: info}
-      - uv run pre-commit autoupdate
+        vars: { MSG: ✅ Environment reset complete., TYPE: success }
 
   # ----------------------
   # Node/pnpm
@@ -154,7 +134,12 @@ tasks:
     desc: Update Node.js dependencies
     cmds:
       - task: _log
-        vars: { MSG: Updating Node.js dependencies (including latest major versions)..., TYPE: info }
+        vars:
+          {
+            MSG:
+              Updating Node.js dependencies (including latest major versions)...,
+            TYPE: info
+          }
       - pnpm update --latest
 
   # ====================================================================
@@ -169,19 +154,33 @@ tasks:
       - pnpm run lint:docs
     silent: true
 
-
   # Lints all .ps1 files in the current directory and subdirectories.
   # The '-c' flag tells 'pwsh' to run the subsequent command string.
   lint-pwsh:
     desc: Runs PSScriptAnalyzer to check all PowerShell scripts.
     cmds:
       - task: _log
-        vars: { MSG: 🧪 Running pwsh-script linting..., TYPE: info}
-      - pwsh -NoProfile -NoInteractive -Command "
-          Import-Module -Name PSScriptAnalyzer;
-          Invoke-ScriptAnalyzer -Path './**/*.ps1' -Severity Warning -EnableExit;
-          if ($LASTEXITCODE -ne 0) { throw 'PSScriptAnalyzer found issues.' }
-        "
+        vars: { MSG: 🧪 Running pwsh-script linting..., TYPE: info }
+      - pwsh -NoProfile -Command " Import-Module -Name PSScriptAnalyzer;
+        Invoke-ScriptAnalyzer -Path './**/*.ps1' -Severity Warning -EnableExit
+        -Settings './PSScriptAnalyzerSettings.psd1'; "
+
+  # ----------------------
+  # MegaLinter via Docker
+  # ----------------------
+  megalinter:
+    desc: Run all static code analysis via MegaLinter Docker image.
+    cmds:
+      - task: _log
+        vars: { MSG: 🐳 Starting MegaLinter analysis via Docker..., TYPE: info }
+      - |
+        docker run --rm \
+          -v "$(pwd)":/tmp/lint \
+          -e DISABLE_ERRORS_ON_LINTER="none" \
+          -e JSON_REPORTER=false \
+          megalinter/megalinter:latest
+      - task: _log
+        vars: { MSG: ✅ MegaLinter scan complete., TYPE: success }
 
   lint:
     desc: Run all linting
@@ -189,46 +188,26 @@ tasks:
       - task: _log
         vars: { MSG: 🧪 Linting all..., TYPE: info }
       - task: lint-pwsh
+      - shellcheck ./scripts/*
       - task: lint-docs
       - task: _log
         vars: { MSG: ✅ All linting complete., TYPE: success }
-
-
 
   # Formats and fixes your scripts.
   format-pwsh:
     desc: Runs PSScriptAnalyzer with -Fix to auto-format scripts.
     cmds:
-      - pwsh -NoProfile -NoInteractive -Command "
-          Import-Module -Name PSScriptAnalyzer;
-          Invoke-ScriptAnalyzer -Path './**/*.ps1' -Fix;
-        "
+      - pwsh -NoProfile -Command " Import-Module -Name PSScriptAnalyzer;
+        Invoke-ScriptAnalyzer -Path './**/*.ps1' -Fix; "
 
   format:
     desc: Format code and docs
     cmds:
       - task: _log
-        vars: { MSG: 🎨 Running formatters..., TYPE: info}
+        vars: { MSG: 🎨 Running formatters..., TYPE: info }
+      - task: format-pwsh
+      - shfmt ./scripts/*.sh -w
       - pnpm run format
-      - task: pwsh
-      - uv run pre-commit run --hook-stage manual --all-files
-
-  # ----------------------
-  # Testing & Coverage
-  # ----------------------
-  test:
-    desc: Run pytest
-    cmds:
-      - task: _log
-        vars: { MSG: 🧪 Running tests..., TYPE: info }
-      - echo "Not in that project..."
-
-  coverage:
-    desc: Run tests with coverage
-    cmds:
-      - task: _log
-        vars: { MSG: 🔬 Running tests with coverage..., TYPE: info}
-      - echo "Not in that project..."
 
   # ====================================================================
   # 3. DOCUMENTATION
@@ -237,31 +216,33 @@ tasks:
     desc: Serve docs locally
     cmds:
       - task: _log
-        vars: { MSG: 🌐 Serving documentation..., TYPE: info}
+        vars: { MSG: 🌐 Serving documentation..., TYPE: info }
       - uv run mkdocs serve --dev-addr localhost:8090
 
   docs-build:
     desc: Build docs
     deps:
       - lint-docs
+      - help-generate
     cmds:
       - task: _log
-        vars: { MSG: 📘 Building documentation..., TYPE: info}
+        vars: { MSG: 📘 Building documentation..., TYPE: info }
       - uv run mkdocs build --clean --strict
-      - uv run python -m json.tool --sort-keys --no-indent ./site/search/search_index.json ./site/search/search_index.json
+      - uv run python -m json.tool --sort-keys --no-indent
+        ./site/search/search_index.json ./site/search/search_index.json
 
   spell-check:
     desc: Check spelling
     cmds:
       - task: _log
-        vars: { MSG: 🔤 Checking spelling..., TYPE: info}
+        vars: { MSG: 🔤 Checking spelling..., TYPE: info }
       - pnpm run lint:spell
 
   update-project-words:
     desc: Update project words for spelling
     cmds:
       - task: _log
-        vars: { MSG: 🧩 Updating project words..., TYPE: info}
+        vars: { MSG: 🧩 Updating project words..., TYPE: info }
       - pnpm run cspell:project-words
 
   # ====================================================================
@@ -279,19 +260,22 @@ tasks:
       - cmd: pwsh -File ./.tmp/Invoke-DevGuideGeneration.ps1
         platforms: [windows]
     deps:
-       - _fetch-generator # Dependency ensures the latest script is always used
-
+      - _fetch-generator # Dependency ensures the latest script is always used
 
   maintenance:update-all:
-    desc: Update pnpm dependencies and pre-commit hooks, then run quality checks.
+    desc:
+      Update pnpm dependencies and pre-commit hooks, then run quality checks.
     cmds:
       - task: _log
         vars: { MSG: Starting full maintenance update..., TYPE: info }
-      - task: hooks:update
       - task: pnpm:update
       - task: lint
       - task: _log
-        vars: { MSG: Full maintenance update and quality check complete., TYPE: success }
+        vars:
+          {
+            MSG: Full maintenance update and quality check complete.,
+            TYPE: success
+          }
 
   dependencies:graph:
     desc: Visualize dependencies (requires uv or similar)
@@ -299,149 +283,3 @@ tasks:
       - task: _log
         vars: { MSG: 🌳 Generating dependency graph..., TYPE: info }
       - uv tree
-
-  # ====================================================================
-  # 5. TRANSLATIONS
-  # ====================================================================
-
-  # ----------------------
-  # Qt Translations
-  # ----------------------
-  extract-qt-translations:
-    desc: "Extract Qt translation strings (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: _log
-        vars: { MSG: "🌍 Extract Qt translations for **\"{{.TARGET_LANGUAGE | default \"all languages\" }}\"**.", TYPE: info}
-
-      # UNiX: Optimierte Go-Template Logik
-      - cmd: |
-          LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          ./scripts/translate-qt-extract.sh "$LANGS" "{{.GUI_DIR }}" "{{.GUI_TRANSLATIONS_DIR}}"
-        platforms: [darwin, linux]
-
-      # WINDOWS: Optimierte Go-Template Logik
-      - cmd: |
-          $LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          pwsh ./scripts/translate-qt-extract.ps1 "$LANGS" "{{.GUI_DIR }}" "{{.GUI_TRANSLATIONS_DIR}}"
-        platforms: [windows]
-
-  compile-qt-translations:
-    desc: "Compile Qt translations (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: _log
-        vars: { MSG: "🌍 Compile Qt translations for **\"{{.TARGET_LANGUAGE | default \"all languages\" }}\"**.", TYPE: info}
-
-      # UNiX: Optimized Go-Template Logic
-      - cmd: |
-          LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          ./scripts/translate-qt-compile.sh "$LANGS" "{{.GUI_DIR }}" "{{.GUI_TRANSLATIONS_DIR}}"
-        platforms: [darwin, linux]
-
-      # WINDOWS: Optimized Go-Template Logic
-      - cmd: |
-          $LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          ./scripts/translate-qt-compile.ps1 "$LANGS" "{{.GUI_DIR }}" "{{.GUI_TRANSLATIONS_DIR}}"
-        platforms: [windows]
-
-  # ----------------------
-  # Babel Translations
-  # ----------------------
-  extract-babel-translations:
-    desc: Extract Babel translation strings
-    cmds:
-      - task: _log
-        vars: { MSG: "🌍 Extract Python translations for **\"{{.TARGET_LANGUAGE | default \"all languages\" }}\"**.", TYPE: info }
-
-      # UNiX
-      - cmd: ./scripts/translate-babel-extract.sh "{{.SRC_DIR}}" "{{.LOCALES_DIR}}" "{{.DOMAIN}}"
-        platforms: [darwin, linux]
-
-      # WINDOWS
-      - cmd: ./scripts/translate-babel-extract.ps1 "{{.SRC_DIR}}" "{{.LOCALES_DIR}}" "{{.DOMAIN}}"
-        platforms: [windows]
-
-  compile-babel-translations:
-    desc: "Compile Babel translations (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: _log
-        vars: { MSG: "🌍 Compile Python translation for **\"{{.TARGET_LANGUAGE | default \"all languages\" }}\"**.", TYPE: info }
-
-      # UNiX: : Optimized Go-Template Logic
-      - cmd: |
-          LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          ./scripts/translate-babel-compile.sh "$LANGS" "{{.LOCALES_DIR}}" "{{.DOMAIN}}"
-        platforms: [darwin, linux]
-
-      # WINDOWS: : Optimized Go-Template Logic
-      - cmd: |
-          $LANGS="{{ if .TARGET_LANGUAGE }}{{.TARGET_LANGUAGE}}{{ else }}{{.LANGUAGES}}{{ end }}"
-          ./scripts/translate-babel-compile.ps1 "$LANGS" "{{.LOCALES_DIR}}" "{{.DOMAIN}}"
-        platforms: [windows]
-
-  # ----------------------
-  # 6. Composite Translation Tasks
-  # ----------------------
-  translate-qt:
-    desc: "Extract & compile Qt translations (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: extract-qt-translations
-      - task: compile-qt-translations
-      - task: _log
-        vars: { MSG: 🌍 Qt translation process complete., TYPE: success}
-
-  translate-babel:
-    desc: "Extract & compile Babel translations (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: extract-babel-translations
-      - task: compile-babel-translations
-      - task: _log
-        vars: { MSG: 🌍 Python translation process complete., TYPE: success}
-
-  translate-all:
-    desc: "Extract & compile all translations (Optional: TARGET_LANGUAGE=de)"
-    cmds:
-      - task: translate-qt
-      - task: translate-babel
-      - task: _log
-        vars: { MSG: 🌍 Translation process complete., TYPE: success}
-
-  # ====================================================================
-  # 7. CORE EXECUTION (Build & Run)
-  # ====================================================================
-
-  build:
-    desc: Builds the project based on the LANG variable (e.g., LANG=cpp or LANG=rust). This task delegates to the language-specific build command.
-    cmds:
-      - task: _log
-        vars: { MSG: "🏗️ Starting build for language: {{.LANG}}", TYPE: info }
-      - task: build:{{.LANG}}
-      - task: _log
-        vars: { MSG: ✅ Build complete!, TYPE: success }
-
-  # --- Language-Specific Builders (Only Python implementation remains) ---
-
-  'build:python':
-    desc: "Python Build: No-op for typical dev cycle, use `hatch build` for distribution."
-    cmds:
-      - task: _log
-        vars: { MSG: "  Skipping build for Python. Run directly with 'task run LANG=python'.", TYPE: info }
-
-
-  run:
-    desc: Runs the project based on the LANG variable (e.g., LANG=cpp or LANG=python). **Performs a build first.** This task delegates to the language-specific run command.
-    deps:
-      - build # Ensure it's always built first
-    cmds:
-      - task: _log
-        vars: { MSG: "🚀 Starting run for language: {{.LANG}}", TYPE: info }
-      - task: run:{{.LANG}}
-
-  # --- Language-Specific Runners (Only Python implementation remains) ---
-
-  "run:python":
-    desc: "Python Run: Executes the main module ({{.DOMAIN}}) via Hatch environment."
-    cmds:
-      # Assuming your project is run as a module within the Hatch default environment
-      - task: _log
-        vars: { MSG: "  Running Python module {{.DOMAIN}} via hatch run default", TYPE: info }
-      - hatch run default:"{{.PYTHON}}" -m "{{.DOMAIN}}"
