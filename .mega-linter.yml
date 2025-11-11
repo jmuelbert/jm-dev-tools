@@ -1,0 +1,57 @@
+# .mega-linter.yml
+# Optimized for PowerShell, Shell, Documentation, and Security.
+
+# --- Core Settings ---
+VALIDATE_ALL_CODEBASE: true
+APPLY_FIXES: none
+
+# --- Enable/Disable Strategy ---
+# We use ENABLE_LINTERS for max speed and security.
+# Remove the large 'DISABLE' block as it is now redundant.
+
+# --- Linter Selection ---
+ENABLE_LINTERS:
+  # 1. Scripting (Shell & PowerShell)
+  - BASH_EXEC             # Basic shell script syntax check
+  - BASH_SHELLCHECK       # Advanced Shell script linter (your core need)
+  - POWERSHELL_POWERSHELL # PowerShell linter (PSScriptAnalyzer)
+
+  # 2. Configuration & Data Files
+  - YAML_YAMLLINT         # General YAML config files (CI, mkdocs, etc.)
+  - JSON_JSONLINT         # General JSON files
+  - JSON_NPM_PACKAGE_JSON_LINT # Specific checks for package.json integrity (Keep this since you use pnpm)
+
+  # 3. Documentation & Spelling
+  - SPELL_CSPELL          # Spelling check (Crucial)
+  - SPELL_VALE            # Documentation style and grammar check
+  - MARKDOWN_MARKDOWNLINT # Markdown file structure and style
+  - MARKDOWN_MARKDOWN_LINK_CHECK # Checks for broken links in documentation
+
+  # 4. Security & Integrity (CRITICAL)
+  - REPOSITORY_GITLEAKS   # Secrets scanning in Git history
+  - REPOSITORY_TRUFFLEHOG # Advanced secrets scanning
+  - REPOSITORY_SECRETLINT # General secrets pattern detection
+  - REPOSITORY_DEVSKIM    # Basic security scanning
+  - REPOSITORY_TRIVY      # Scans dependencies and configurations for known vulnerabilities
+  - REPOSITORY_TIDY       # Basic file hygiene (trailing spaces, newlines)
+
+  # 5. GitHub Actions Files
+  - ACTION_ACTIONLINT     # Lints GitHub Actions workflow files (.github/workflows/*.yml)
+
+  # 6. Languages
+  # --- Javascript Specific Linters
+  - JAVASCRIPT_ES
+  - JAVASCRIPT_STANDARD
+
+# --- Configuration Arguments ---
+# Arguments for linters that need specific settings
+PYTHON_RUFF_CONFIG_FILE: pyproject.toml
+PYTHON_PYRIGHT_CONFIG_FILE: pyproject.toml
+YAML_YAMLLINT_FILTER_REGEX_EXCLUDE: '^(docs/|\\.github/)' # Optional: Exclude docs/ or .github/ from general YAML linting if they use specific standards
+
+# --- Exclusion List (To avoid running on third-party folders) ---
+EXCLUDED_DIRECTORIES:
+  - node_modules
+  - .venv
+  - dist
+  - .git

@@ -1,0 +1,44 @@
+---
+name: ⚙️ Code Quality (MegaLinter)
+
+on:
+  push:
+    # Runs on every push to the main branches
+    branches: [ main, master ]
+  pull_request:
+    # Runs on every pull request
+    branches: [ main, master ]
+
+jobs:
+  megalinter:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    # Give the default GITHUB_TOKEN read permission only
+    # (Since we aren't auto-committing fixes, we don't need 'write')
+    permissions:
+      contents: read
+      pull-requests: write # Still needed for posting PR status check
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Fetch depth 0 is needed for diff-based linting, but since we'll rely on
+          # VALIDATE_ALL_CODEBASE=true (recommended for simplicity), you can usually omit this.
+          fetch-depth: 0
+
+      - name: Run MegaLinter
+        # Use a fixed, stable version (v8 is current, or v7 if you prefer)
+        uses: oxsecurity/megalinter@v9
+        env:
+          # --- Essential Configuration ---
+          # 1. Provide the necessary token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # 2. Tell MegaLinter to run on the entire checked-out codebase
+          # This is simpler and more reliable than running on diffs.
+          VALIDATE_ALL_CODEBASE: true
+
+          # 3. Disable the Fixes (Crucial for simplicity and security)
+          APPLY_FIXES: none
