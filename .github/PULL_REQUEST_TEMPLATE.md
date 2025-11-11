@@ -35,8 +35,8 @@
 <!--- You can open a pull request before all these are done, but
      they should be done before getting merged. -->
 
-- [ ] If the key of a setting is changed, the `old` attribute is updated or
-      it is resolved in SettingsUpdater.
+- [ ] If the key of a setting is changed, the `old` attribute is updated or it
+      is resolved in SettingsUpdater.
 - [ ] If needed, I have opened a pull request or an issue to update the
       [documentation](http://jmuelbert.github.io/jm-bde-python/).
 - [ ] If these changes are notable, they are documented in
