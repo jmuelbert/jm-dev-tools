@@ -1,0 +1,88 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# yamllint disable-line rule:line-length
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Documentation Deployment
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/**
+      - CHANGELOG.md
+      - .github/CONTRIBUTING.md
+      - .github/CODE_OF_CONDUCT.md
+      - mkdocs.yml
+      - .github/workflows/docs-deploy.yml
+
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # For pushing to the gh-pages branch
+      pages: write # Required for deploying to GitHub Pages
+      id-token: write # Required for OIDC authentication with GitHub Page
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Call Python Environment Setup
+        uses: ./.github/actions/python-setup
+        id: python-setup
+
+      - name: Configure Git Credentials
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+      - name: 📝 Deploy Docs with mike
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+              VERSION="${GITHUB_REF_NAME}"
+          elif [[ "${GITHUB_REF_NAME}" == "main" ]]; then
+              VERSION="dev"
+          else
+              echo "Unsupported ref: ${GITHUB_REF_NAME}"
+              exit 0
+          fi
+
+          hatch env run --env docs -- mike deploy "$VERSION" --push --update-aliases latest
+          hatch env run --env docs -- mike set-default latest || echo "No 'latest' alias yet"
+
+  verify:
+    needs: [build-and-deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+      - name: ✅ Verify Workflow Completion
+        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}
