@@ -1,0 +1,279 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+version: "3"
+
+# ====================================================================
+# CONFIGURATION
+# ====================================================================
+# -----------------------------------------------------------
+# 🧩 GLOBALS
+# -----------------------------------------------------------
+vars:
+  LOG: warn
+  DOMAIN: jm-dev-tools
+  SRC_DIR: scripts
+  DOCS_DIR: docs
+
+  LANGUAGES: en es fr de it pt pt_BR ru zh_CN zh_TW ja ko hi tr ar vi pl nl sv
+  PYTHON: python3
+  TARGET_LANGUAGE: ""
+
+  # --- NEW MULTI-LANGUAGE VARIABLES ---
+  LANG: "" # Language identifier (e.g., cpp, rust, python) - MANDATORY for build/run
+  EXECUTABLE_NAME: app # Default name for compiled binary
+  BUILD_DIR: . # Directory where compilation takes place (relative to Taskfile)
+
+# -----------------------------------------------------------
+# 🪵 LOGGING HELPERS
+# -----------------------------------------------------------
+tasks:
+  _log:
+    internal: true
+    silent: true
+    # TYPE: info, success, warn, error
+    vars:
+      SYMBOL:
+        sh: |
+          case "{{.TYPE}}" in
+            info) echo "ℹ️" ;;
+            success) echo "✅" ;;
+            warn) echo "⚠️" ;;
+            error) echo "❌" ;;
+            *) echo "" ;;
+          esac
+    cmds:
+      - echo "{{.SYMBOL}} [{{.TYPE | upper}}] {{.MSG}}"
+
+  #
+  # Task: _fetch-generator
+  # Description: Private task to download the latest dev guide script from the shared repository.
+  # Note: Replace 'YourOrg/dev-tooling' with your actual organization and repository name.
+  #
+  _fetch-generator:
+    internal: true
+    cmds:
+      - |
+        mkdir -p .tmp
+        echo "Fetching latest devguide-generator.sh from GitHub..."
+        # Download Bash script for Unix-like systems
+        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scripts/devguide-generator.sh \
+        -o .tmp/devguide-generator.sh
+        # Download PowerShell script for Windows
+        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scripts/Invoke-DevGuideGeneration.ps1 \
+        -o .tmp/Invoke-DevGuideGeneration.ps1
+    silent: true
+
+  default:
+    desc: Lists all available tasks
+    cmds:
+      - task --list-all
+
+  # ====================================================================
+  # 1. SETUP & ENVIRONMENT
+  # ====================================================================
+  setup:
+    desc: Performs full project setup (dependencies, hooks, dev guide)."
+    cmds:
+      - task: _log
+        vars: { MSG: "🔧 Performs full project setup (dependencies, hooks, dev guide).", TYPE: info }
+      - uv venv # NEU: Umgebung explizit erstellen
+      - uv sync --extra dev
+      - task: devguide-generate
+      - task: pnpm:install
+      - task: _log
+        vars: { MSG: ✅ Environment reset complete., TYPE: success }
+
+  clean:
+    desc: Clean caches, builds, and translations
+    cmds:
+      - task: _log
+        vars: { MSG: "🧹 Cleaning caches, builds, and translation files...", TYPE: info }
+      - rm -rf dist build htmlcov site .cache .ropeproject .venv coverage.xml .coverage uv.lock
+      - rm -rf .venv
+      # --- Clean devguide
+      - rm -f .tmp/devguide-generator.sh
+      - rm -f .tmp/Invoke-DevGuideGeneration.ps1
+      - rm -rf docs/en/developer-guide/DEVGUIDE.md
+      # --- Clean compilation artifacts for compiled languages ---
+      - rm -rf {{.BUILD_DIR}}/bin/{{.EXECUTABLE_NAME}} || true
+      - rm -rf {{.BUILD_DIR}}/target || true
+      # --------------------------------------------------------
+      - task: _log
+        vars: { MSG: 🧹 All cleaned, TYPE: success }
+
+  reset:
+    desc: Reset environment
+    cmds:
+      - task: _log
+        vars: { MSG: ♻️ Resetting environment..., TYPE: info }
+      - rm -rf .venv
+      - uv venv
+      - uv sync --extra dev
+      - task devguide-generate
+      - task: pnpm:install
+      - task: _log
+        vars: { MSG: ✅ Environment reset complete., TYPE: success }
+
+  # ----------------------
+  # Node/pnpm
+  # ----------------------
+  pnpm:install:
+    desc: Install Node.js dependencies
+    cmds:
+      - task: _log
+        vars: { MSG: 📦 Installing Node.js dependencies..., TYPE: info }
+      - pnpm install
+
+  pnpm:update:
+    desc: Update Node.js dependencies
+    cmds:
+      - task: _log
+        vars: { MSG: Updating Node.js dependencies (including latest major versions)..., TYPE: info }
+      - pnpm update --latest
+
+  # ====================================================================
+  # 2. CORE QUALITY & TESTS
+  # ====================================================================
+
+  lint-docs:
+    desc: Lint documentation
+    cmds:
+      - task: _log
+        vars: { MSG: 📖 Running documentation linting..., TYPE: info }
+      - pnpm run lint:docs
+    silent: true
+
+  # Lints all .ps1 files in the current directory and subdirectories.
+  # The '-c' flag tells 'pwsh' to run the subsequent command string.
+  lint-pwsh:
+    desc: Runs PSScriptAnalyzer to check all PowerShell scripts.
+    cmds:
+      - task: _log
+        vars: { MSG: 🧪 Running pwsh-script linting..., TYPE: info }
+      - pwsh -NoProfile -Command " Import-Module -Name PSScriptAnalyzer;
+        Invoke-ScriptAnalyzer -Path './**/*.ps1' -Severity Warning -EnableExit
+        -Settings './PSScriptAnalyzerSettings.psd1'; "
+
+  lint-yaml:
+    desc: Runs yamllint to check all YAML files.
+    cmds:
+      - task: _log
+        vars: { MSG: 🧪 Running yaml linting..., TYPE: info }
+      - uv run yamllint -c .yamllint.yml .
+
+  # ----------------------
+  # MegaLinter via Docker
+  # ----------------------
+  megalinter:
+    desc: Run all static code analysis via MegaLinter Docker image.
+    cmds:
+      - task: _log
+        vars: { MSG: 🐳 Starting MegaLinter analysis via Docker..., TYPE: info }
+      - |
+        docker run --rm \
+          -v "$(pwd)":/tmp/lint \
+          -e DISABLE_ERRORS_ON_LINTER="none" \
+          -e JSON_REPORTER=false \
+          megalinter/megalinter:latest
+      - task: _log
+        vars: { MSG: ✅ MegaLinter scan complete., TYPE: success }
+
+  lint:
+    desc: Run all linting
+    cmds:
+      - task: _log
+        vars: { MSG: 🧪 Linting all..., TYPE: info }
+      - task: lint-pwsh
+      - shellcheck ./scripts/*.sh
+      - task: lint-yaml
+      - task: lint-docs
+      - task: _log
+        vars: { MSG: ✅ All linting complete., TYPE: success }
+
+  # Formats and fixes your scripts.
+  format-pwsh:
+    desc: Runs PSScriptAnalyzer with -Fix to auto-format scripts.
+    cmds:
+      - pwsh -NoProfile -Command " Import-Module -Name PSScriptAnalyzer;
+        Invoke-ScriptAnalyzer -Path './**/*.ps1' -Fix; "
+
+  format:
+    desc: Format code and docs
+    cmds:
+      - task: _log
+        vars: { MSG: 🎨 Running formatters..., TYPE: info }
+      - task: format-pwsh
+      - shfmt -l -w ./scripts/*.sh
+      - pnpm run format
+
+  # ====================================================================
+  # 3. DOCUMENTATION
+  # ====================================================================
+  serve:
+    desc: Serve docs locally
+    cmds:
+      - task: _log
+        vars: { MSG: 🌐 Serving documentation..., TYPE: info }
+      - uv run mkdocs serve --dev-addr localhost:8090
+
+  docs-build:
+    desc: Build docs
+    deps:
+      - lint-docs
+      - help-generate
+    cmds:
+      - task: _log
+        vars: { MSG: 📘 Building documentation..., TYPE: info }
+      - uv run mkdocs build --clean --strict
+      - uv run python -m json.tool --sort-keys --no-indent
+        ./site/search/search_index.json ./site/search/search_index.json
+
+  spell-check:
+    desc: Check spelling
+    cmds:
+      - task: _log
+        vars: { MSG: 🔤 Checking spelling..., TYPE: info }
+      - pnpm run lint:spell
+
+  update-project-words:
+    desc: Update project words for spelling
+    cmds:
+      - task: _log
+        vars: { MSG: 🧩 Updating project words..., TYPE: info }
+      - pnpm run cspell:project-words
+
+  # ====================================================================
+  # 4. ADVANCED / MAINTENANCE
+  # ====================================================================
+  devguide-generate:
+    desc: Build an devguide markdown file
+    cmds:
+      - task: _log
+        vars: { MSG: 📚 Generating DEVGUIDE.md, TYPE: info }
+      - cmd: |
+          chmod +x ./.tmp/devguide-generator.sh
+          ./.tmp/devguide-generator.sh .
+        platforms: [darwin, linux]
+      - cmd: pwsh -File ./.tmp/Invoke-DevGuideGeneration.ps1
+        platforms: [windows]
+    deps:
+      - _fetch-generator # Dependency ensures the latest script is always used
+
+  maintenance:update-all:
+    desc: Update pnpm dependencies and pre-commit hooks, then run quality checks.
+    cmds:
+      - task: _log
+        vars: { MSG: Starting full maintenance update..., TYPE: info }
+      - task: pnpm:update
+      - task: lint
+      - task: _log
+        vars: { MSG: Full maintenance update and quality check complete., TYPE: success }
+
+  dependencies:graph:
+    desc: Visualize dependencies (requires uv or similar)
+    cmds:
+      - task: _log
+        vars: { MSG: 🌳 Generating dependency graph..., TYPE: info }
+      - uv tree

@@ -1,0 +1,65 @@
+SPDX-PackageDownloadLocation = "https://www.github.com/jmuelbert/jm-bde-python"
+SPDX-PackageName             = "jm-bde-python"
+SPDX-PackageSupplier         = "<juergen.muelbert@outlook.de>"
+version                      = 1
+
+[[annotations]]
+SPDX-FileCopyrightText  = "Jürgen Mülbert <juergen.muelbert@outlook.de>"
+SPDX-License-Identifier = "EUPL-1.2"
+path                    = ["src/**", "tests/**"]
+precedence              = "aggregate"
+
+[[annotations]]
+SPDX-FileCopyrightText  = "Jürgen Mülbert <juergen.muelbert@outlook.de>"
+SPDX-License-Identifier = "CC-BY-SA-4.0"                                             # Leerzeichen entfernt
+path                    = ["README.md", "AUTHORS.md", "CHANGELOG.md", "SECURITY.md"]
+precedence              = "aggregate"
+
+[[annotations]]
+SPDX-FileCopyrightText = "Jürgen Mülbert <juergen.muelbert@outlook.de>"
+SPDX-License-Identifier = "CC-BY-4.0" # Leerzeichen entfernt
+path = [
+  ".github/CODE_OF_CONDUCT.md",
+  ".github/CONTRIBUTING.md",
+  ".github/PULL_REQUEST_TEMPLATE.md",
+  ".github/config/styles/Microsoft/*",
+  ".github/config/styles/Readability/*",
+  ".github/config/styles/proselint/*",
+]
+precedence = "aggregate" # Fehlende schließende Klammer hinzugefügt
+
+[[annotations]]
+SPDX-FileCopyrightText = "Jürgen Mülbert <juergen.muelbert@outlook.de>"
+SPDX-License-Identifier = "EUPL-1.2"
+path = [
+  ".gitattributes",
+  ".gitignore",
+  ".github/branch-name-patterns.yml",
+  ".github/config/dependency-review-config.yml",
+  ".github/config/gitleaks.toml",
+  ".github/config/issue-triage.json",
+  ".github/config/labeler.yml",
+  ".github/config/labels.yml",
+  ".github/config/project-management.json",
+  ".github/config/release-changelog-config.json",
+  ".github/config/release-drafter.yml",
+  ".github/invite-contributors.yml",
+  ".github/repo-metadata.yml",
+  ".github/badges/coverage.json",
+  ".github/PULL_REQUEST_TEMPLATE.md",
+  ".markdown-link-check.json",
+  ".markdownlint.json",
+  ".npmrc",
+  ".readthedocs.yml",
+  ".taplo.toml",
+  ".pre-commit-config.yaml",
+  ".python-version",
+  ".vala.ini",
+  ".vscode/*",
+  "biome.json",
+  "cspell.json",
+  "package.json",
+  "pnpm-lock.yaml",
+  "project-words.txt",
+]
+precedence = "aggregate"
