@@ -1,0 +1,105 @@
+---
+# SPDX-FileCopyrightText: 2025-present <Jürgen Mülbert>
+# SPDX-License-Identifier: MIT
+
+version: 2
+
+updates:
+  # --- GitHub Actions ---
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: chore(actions)
+      include: scope
+    open-pull-requests-limit: 5
+    pull-request-branch-name:
+      separator: /
+    rebase-strategy: auto
+    ignore:
+      - dependency-name: "*"
+        # yamllint disable-line rule:quoted-strings
+        update-types: ["version-update:semver-major"]
+
+  # --- Python (pip) ---
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      production:
+        dependency-type: production
+        update-types: [minor, patch]
+      development:
+        dependency-type: development
+        update-types: [minor, patch]
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: chore(pip)
+      include: scope
+    open-pull-requests-limit: 10
+    pull-request-branch-name:
+      separator: /
+    rebase-strategy: auto
+    allow:
+      - dependency-type: direct
+      - dependency-type: indirect
+    ignore:
+      - dependency-name: "*"
+        # yamllint disable-line rule:quoted-strings
+        update-types: ["version-update:semver-major"]
+
+  # --- Docker ---
+  - package-ecosystem: docker
+    directory: .devcontainer
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: chore(docker)
+      include: scope
+    open-pull-requests-limit: 5
+    rebase-strategy: auto
+    ignore:
+      - dependency-name: "*"
+        # yamllint disable-line rule:quoted-strings
+        update-types: ["version-update:semver-major"]
+
+  # --- npm (for some tools) ---
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      production:
+        dependency-type: production
+        update-types: [minor, patch]
+      development:
+        dependency-type: development
+        update-types: [minor, patch]
+    labels:
+      - dependencies
+      - javascript
+    commit-message:
+      prefix: chore(docs)
+      include: scope
+    open-pull-requests-limit: 5
+    pull-request-branch-name:
+      separator: /
+    rebase-strategy: auto
+    ignore:
+      - dependency-name: "*"
+        # yamllint disable-line rule:quoted-strings
+        update-types: ["version-update:semver-major"]

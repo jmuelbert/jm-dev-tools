@@ -1,0 +1,136 @@
+---
+# SPDX-FileCopyrightText: GitHub, Inc. and contributors
+# SPDX-License-Identifier: MIT
+
+name: Dependabot Auto-Merge
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  dependabot:
+    name: Process Dependabot PR
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      !contains(github.event.pull_request.labels.*.name, 'do-not-merge')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+
+    outputs:
+      dependency-names: ${{ steps.metadata.outputs.dependency-names }}
+      update-type: ${{ steps.metadata.outputs.update-type }}
+      merged: ${{ steps.merge.outputs.merged }}
+
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 📊 Fetch Dependabot Metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b # v2.4.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Add Labels
+        id: labels
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          DEPENDENCY_TYPE: ${{ steps.metadata.outputs.dependency-type }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          ALERT_STATE: ${{ steps.metadata.outputs.alert-state }}
+        with:
+          script: |
+            const script = require('./.github/scripts/add-labels.js');
+            await script.default({ github, context, core, dep_type: env.DEPENDENCY_TYPE, update_type: env.UPDATE_TYPE, alert_state: env.ALERT_STATE });
+
+      - name: ✅ Auto-approve PR
+        id: approve
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          contains(steps.metadata.outputs.dependency-names, 'test-dependencies')
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          # yamllint disable rule:indentation
+          script: |
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              event: 'APPROVE',
+              body: '✅ Automatically approved based on dependency type and update scope'
+            });
+          # yamllint enable
+
+      - name: 🔄 Enable Auto-merge
+        id: merge
+        if: |
+          steps.approve.outcome == 'success' &&
+          !contains(steps.metadata.outputs.dependency-names, 'blocked-deps')
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const script = require('./.github/scripts/enable-auto-merge.js');
+            await script.default({ github, context, core });
+
+      - name: 📝 Add Merge Comment
+        if: steps.merge.outputs.merged == 'true'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          # yamllint disable rule:indentation
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `✅ Successfully auto-merged this PR!\n\nUpdated dependencies:\n${steps.metadata.outputs.dependency-names}`
+            });
+          # yamllint enable
+
+  notify:
+    needs: dependabot
+    if: always() && needs.dependabot.result != 'skipped'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: 🔔 Notify on Failure
+        if: needs.dependabot.result == 'failure'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          # yamllint disable rule:indentation
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: '❌ Auto-merge workflow failed. Please check the workflow logs.'
+            });
+          # yamllint enable
+
+      - name: ✅ Verify Workflow Completion
+        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
+        with:
+          jobs: ${{ toJSON(needs) }}

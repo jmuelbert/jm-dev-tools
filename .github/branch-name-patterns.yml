@@ -1,0 +1,9 @@
+---
+patterns:
+  - feat/*
+  - feature/*
+  - fix/*
+  - bugfix/*
+  - hotfix/*
+  - release/*
+  - pypi/*

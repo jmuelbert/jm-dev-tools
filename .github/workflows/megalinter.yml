@@ -1,0 +1,45 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
+#
+name: ⚙️ Code Quality (MegaLinter)
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    # Runs on every push to the main branches
+    branches: [main, master]
+  pull_request:
+    # Runs on every pull request
+    branches: [main, master]
+
+jobs:
+  megalinter:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    # Give the default GITHUB_TOKEN read permission only
+    # (Since we aren't auto-committing fixes, we don't need 'write')
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      - name: 🔄  Run MegaLinter
+        # Use a fixed, stable version (v8 is current, or v7 if you prefer)
+        uses: oxsecurity/megalinter@55a59b24a441e0e1943080d4a512d827710d4a9d # v9
+        env:
+          # --- Essential Configuration ---
+          # 1. Provide the necessary token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # 2. Tell MegaLinter to run on the entire checked-out codebase
+          # This is simpler and more reliable than running on diffs.
+          VALIDATE_ALL_CODEBASE: true
+
+          # 3. Disable the Fixes (Crucial for simplicity and security)
+          APPLY_FIXES: none
