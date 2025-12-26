@@ -3,15 +3,13 @@
 # SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
 
 extends: default
-ignore: |
-  LICENSES/
-  assets/translations/
-  node_modules/
-  pnpm-lock.yaml
-  .venv/
-  .github/config/styles/
-strict: true
-format: parsable
+ignore:
+  - LICENSES/
+  - assets/translations/
+  - node_modules/
+  - pnpm-lock.yaml
+  - .venv/
+  - .github/config/styles/
 
 rules:
   braces:
