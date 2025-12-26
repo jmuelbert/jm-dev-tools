@@ -203,7 +203,8 @@ jobs:
           egress-policy: audit
 
       - name: ✅ Verify Workflow Completion
-        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
+        uses: re-actors/alls-green@v1.2.2
+        # 05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
         with:
           allowed-skips: commit-lint, analyze-pr, dependency-review
           jobs: ${{ toJSON(needs) }}
