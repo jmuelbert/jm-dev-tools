@@ -2,9 +2,19 @@ name: commit-lint
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: ahmadnassri/action-commit-lint@v2
+
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@release/v1
+        with:
+          allowed-failures: docs, linters
+          allowed-skips: non-voting-flaky-job
+          jobs: ${{ toJSON(needs) }}
