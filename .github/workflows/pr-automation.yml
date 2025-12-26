@@ -4,7 +4,6 @@
 
 name: Pull Request Automation
 
-# yamllint disable-line rule:truthy
 on:
   push:
     branches:
@@ -33,18 +32,17 @@ jobs:
       contents: read # For checkout
     steps:
       - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
         with:
           egress-policy: audit
 
       - name: 🧰 Checkout Repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
         with:
           fetch-depth: 0
 
       - name: 📝 Lint Commit Messages
-        uses: ahmadnassri/action-commit-lint@v2
-        # 6714e8135b12bf792cf2c87156e26cf13fe534a8 # v2.1.16 where's the issue?
+        uses: ahmadnassri/action-commit-lint@c46b910837381d1b39c7b7ede72666d7f3e83222  # v2.1.17
 
   analyze-pr:
     name: Analyze and Manage Pull Request
@@ -58,19 +56,18 @@ jobs:
 
     steps:
       - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
         with:
           egress-policy: audit
 
       - name: 🧰 Checkout Repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
         with:
           fetch-depth: 0
 
       - name: 🔄 Check Merge Conflicts
         id: conflicts
-        uses: eps1lon/actions-label-merge-conflict@v3
-        # e62d7a53ff8be8b97684bffb6cfbbf3fc1115e2e # v3.0.0
+        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0  # v3.0.3
         timeout-minutes: 5
         continue-on-error: true
         with:
@@ -89,8 +86,7 @@ jobs:
 
       - name: 📏 Analyze Pull Request Size
         id: size
-        uses: codelytv/pr-size-labeler@v1
-        # 1c3422395d899286d5ee2c809fd5aed264d5eb9b # v1.10.2
+        uses: codelytv/pr-size-labeler@4ec67706cd878fbc1c8db0a5dcd28b6bb412e85a  # v1.10.3
         timeout-minutes: 5
         continue-on-error: true
         with:
@@ -125,7 +121,7 @@ jobs:
 
       - name: 🏷️ Apply Scope Labels
         id: labeler
-        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
+        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b #v6.0.1
         timeout-minutes: 5
         continue-on-error: true
         with:
@@ -134,14 +130,14 @@ jobs:
           sync-labels: true
 
       - name: 📝 Run PR Automation Script
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd   # v8.0.0
         id: pr-script
         env:
           MIN_COVERAGE: 51
         with:
           script: |
             const script = require('./.github/scripts/pr-automation.js');
-            await script.default({ github, context, min_coverage: env.MIN_COVERAGE });
+            await script.default({ github, context, core });
 
   dependency-review:
     name: Dependency Review
@@ -153,16 +149,16 @@ jobs:
 
     steps:
       - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
         with:
           egress-policy: audit
 
       - name: 🧰 Checkout Repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
 
       - name: Dependency Review
         id: review
-        uses: actions/dependency-review-action@3c4e3dcb1aa7874d2c16be7d79418e9b7efd6261 # v4.8.2
+        uses: actions/dependency-review-action@595b5aeba73380359d98a5e087f648dbb0edce1b  # v4.7.3
         with:
           # This action now runs with the goal of generating output for the report
           comment-summary-in-pr: false
@@ -176,19 +172,11 @@ jobs:
           VULNERABLE_CHANGES: ${{ steps.review.outputs.vulnerable-changes }}
           LICENSE_CHANGES: ${{ steps.review.outputs.invalid-license-changes }}
           DENIED_CHANGES: ${{ steps.review.outputs.denied-changes }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd  # v8.0.0
         with:
           script: |
             const script = require('./.github/scripts/dependency-report.js');
-            await script.default({
-              github,
-              context,
-              dep: process.env.DEPENDENCY_CHANGES,
-              workspace: process.env.GITHUB_WORKSPACE,
-              vul: process.env.VULNERABLE_CHANGES,
-              lic: process.env.LICENSE_CHANGES,
-              den: process.env.DENIED_CHANGES
-            });
+            await script.default({ github, context, core });
 
   verify:
     needs: [commit-lint, analyze-pr, dependency-review]
@@ -198,13 +186,12 @@ jobs:
 
     steps:
       - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a  # v2.13.1
         with:
           egress-policy: audit
 
       - name: ✅ Verify Workflow Completion
-        uses: re-actors/alls-green@release/v1
-        # 05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
+        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
         with:
           allowed-skips: commit-lint, analyze-pr, dependency-review
           jobs: ${{ toJSON(needs) }}
