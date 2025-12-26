@@ -44,7 +44,7 @@ jobs:
 
       - name: 📝 Lint Commit Messages
         uses: ahmadnassri/action-commit-lint@v2.1.16
-        # 6714e8135b12bf792cf2c87156e26cf13fe534a8 # v2.1.16
+        # 6714e8135b12bf792cf2c87156e26cf13fe534a8 # v2.1.16 where's the issue?
 
   analyze-pr:
     name: Analyze and Manage Pull Request
