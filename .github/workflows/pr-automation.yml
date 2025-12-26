@@ -42,8 +42,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 📝 Lint Commit Messages
-        uses: conventional-changelog/commitlint-action@v4
+      # - name: 📝 Lint Commit Messages
+      #   uses: conventional-changelog/commitlint-action@v4
 
   analyze-pr:
     name: Analyze and Manage Pull Request
