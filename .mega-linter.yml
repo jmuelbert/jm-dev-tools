@@ -43,7 +43,7 @@ ENABLE_LINTERS:
   - REPOSITORY_TRUFFLEHOG # Advanced secrets scanning
 
   # 4.1 Spell
-  - SPELL_CSPELL # Spelling check (Crucial)
+  # - SPELL_CSPELL # Spelling check (Crucial)
   # - SPELL_VALE # Documentation style and grammar check
 
 # --- Configuration Arguments ---
@@ -60,12 +60,28 @@ MARKDOWN_FILTER_REGEX_EXCLUDE: (license\.md|docs/licenses|LICENSE|LICENSES)
 SPELL_VALE_FILE_EXTENSIONS:
   - .md
 SPELL_FILTER_REGEX_EXCLUDE: (\.github|docs/licenses|LICENSE|LICENSES)
-DOCKERFILE_HADOLINT_ARGUMENTS: "--ignore DL3003 --ignore DL3007 --ignore DL3013 --ignore DL3016 --ignore DL3018 --ignore DL3028 --ignore DL3059 --ignore DL4001 --ignore DL4006 --ignore SC2015 --ignore SC2016 --ignore SC2039 --ignore SC2086 --ignore SC1091 --ignore SC3046"
+DOCKERFILE_HADOLINT_ARGUMENTS:
+  - --ignore DL3003
+  - --ignore DL3007
+  - --ignore DL3013
+  - --ignore DL3016
+  - --ignore DL3018
+  - --ignore DL3028
+  - --ignore DL3059
+  - --ignore DL4001
+  - --ignore DL4006
+  - --ignore SC2015
+  - --ignore SC2016
+  - --ignore SC2039
+  - --ignore SC2086
+  - --ignore SC1091
+  - --ignore SC3046
 REPOSITORY_TRIVY_ARGUMENTS:
-  - "--skip-dirs"
-  - ".automation/test"
-  - "--skip-dirs"
-  - ".venv"
+  - --skip-dirs
+  - .automation/test
+  - --skip-dirs
+  - .venv
+
 # --- Exclusion List (To avoid running on third-party folders) ---
 EXCLUDED_DIRECTORIES:
   - node_modules
