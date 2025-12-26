@@ -43,7 +43,8 @@ jobs:
           fetch-depth: 0
 
       - name: 📝 Lint Commit Messages
-        uses: ahmadnassri/action-commit-lint@c46b910837381d1b39c7b7ede72666d7f3e83222 # v2.1.17
+        uses: ahmadnassri/action-commit-lint@v2.1.16
+        # 6714e8135b12bf792cf2c87156e26cf13fe534a8 # v2.1.16
 
   analyze-pr:
     name: Analyze and Manage Pull Request
@@ -68,7 +69,8 @@ jobs:
 
       - name: 🔄 Check Merge Conflicts
         id: conflicts
-        uses: eps1lon/actions-label-merge-conflict@1df065ebe6e3310545d4f4c4e862e43bdca146f0 # v3.0.3
+        uses: eps1lon/actions-label-merge-conflict@v3.0.0
+        # e62d7a53ff8be8b97684bffb6cfbbf3fc1115e2e # v3.0.0
         timeout-minutes: 5
         continue-on-error: true
         with:
@@ -87,7 +89,8 @@ jobs:
 
       - name: 📏 Analyze Pull Request Size
         id: size
-        uses: codelytv/pr-size-labeler@4ec67706cd878fbc1c8db0a5dcd28b6bb412e85a # v1.10.3
+        uses: codelytv/pr-size-labeler@v1.10.2
+        # 1c3422395d899286d5ee2c809fd5aed264d5eb9b # v1.10.2
         timeout-minutes: 5
         continue-on-error: true
         with:
@@ -177,14 +180,14 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/dependency-report.js');
-            await script.default({ 
-              github, 
-              context, 
-              dep: process.env.DEPENDENCY_CHANGES, 
-              workspace: process.env.GITHUB_WORKSPACE, 
-              vul: process.env.VULNERABLE_CHANGES, 
-              lic: process.env.LICENSE_CHANGES, 
-              den: process.env.DENIED_CHANGES 
+            await script.default({
+              github,
+              context,
+              dep: process.env.DEPENDENCY_CHANGES,
+              workspace: process.env.GITHUB_WORKSPACE,
+              vul: process.env.VULNERABLE_CHANGES,
+              lic: process.env.LICENSE_CHANGES,
+              den: process.env.DENIED_CHANGES
             });
 
   verify:
