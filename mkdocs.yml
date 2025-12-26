@@ -1,10 +1,11 @@
 ---
 # SPDX-License-Identifier: EUPL-1.2
 # yamllint disable-line rule:line-length
-# SPDX-FileCopyrightText: 2023-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+# SPDX-FileCopyrightText: 2023-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 # yamllint disable-line rule:line-length
 # Source: https://github.com/jmuelbert/jm-bde/blob/main/workflow-templates/assets/mkdocs/mkdocs.yml
 # See: https://www.mkdocs.org/user-guide/configuration/
+# yaml-language-server: $schema=https://www.schemastore.org/mkdocs-1.6.json
 
 # --- Project Information ---
 site_name: jm-dev-tools
