@@ -44,7 +44,7 @@ jobs:
           egress-policy: audit
 
       - name: 📊 Fetch Dependabot Metadata
-        id: dependabot
+        id: metadata
         uses: dependabot/fetch-metadata@08eff52bf64351f401fb50d4972fa95b9f2c2d1b # v2.4.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/add-labels.js');
-            await script.default({ github, context, core, dep_type: env.DEPENDENCY_TYPE, update_type: env.UPDATE_TYPE, alert_state: env.ALERT_STATE });
+            await script.default({ github, context, core, ${{env.DEPENDENCY_TYPE}}, ${{env.UPDATE_TYPE}}, ${{env.ALERT_STATE}});
 
       - name: ✅ Auto-approve PR
         id: approve
