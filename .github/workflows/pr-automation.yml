@@ -238,35 +238,3 @@ jobs:
               lic: process.env.LICENSE_CHANGES,
               den: process.env.DENIED_CHANGES
             });
-
-  verify:
-    needs: [commit-lint, analyze-pr, dependency-review]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
-        with:
-          egress-policy: audit
-
-      - name: 🌟 Add Label on All Green
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            const checks = await github.checks.listForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: pr.head.sha,
-            });
-            const allGreen = checks.data.check_runs.every(check => check.conclusion === 'success');
-            if (allGreen) {
-              await github.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                labels: ['all-green']
-              });
-            }
