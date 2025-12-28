@@ -68,8 +68,10 @@ jobs:
   malcontent:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      security-events: read
+          contents: read
+          issues: write           # Für addLabels
+          pull-requests: write    # Falls es ein PR-Kontext ist
+          security-events: write  # Für upload-sarif
 
     steps:
       - name: 🔒 Harden Runner
