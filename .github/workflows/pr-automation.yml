@@ -130,6 +130,7 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      security-events: read
 
     steps:
       - name: 🔒 Harden Runner
@@ -143,6 +144,7 @@ jobs:
           fetch-depth: 0
 
       - name: Malcontent GitHub Action
+        id: malcontent
         uses: chainguard-dev/malcontent-action@053384afe0bb069ba7e2996bd8c0863731406002  # v0.4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
