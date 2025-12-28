@@ -63,7 +63,7 @@ jobs:
 
       - name: Validate PR commits with commitlint
         if: github.event_name == 'pull_request'
-        run: npx commitlint --from ${{ github.event.pull_request.
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
 
   malcontent:
     runs-on: ubuntu-latest
@@ -91,6 +91,7 @@ jobs:
           echo "Risk changed by: ${{ steps.malcontent.outputs.risk-delta }} points"
           if [[ "${{ steps.malcontent.outputs.risk-increased }}" == "true" ]]; then
             echo "⚠️ Security risk increased!"
+          fi
 
       # Fail only on significant risk increase (>10 points)
       - name: Evaluate risk threshold
