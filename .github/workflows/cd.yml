@@ -1,0 +1,49 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+
+name: Continuous Delivery
+
+# yamllint disable-line rule:truthy
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+
+jobs:
+  release:
+    name: Release Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    # Only run this job if the PR was merged
+    if: ${{ github.event.pull_request.merged == true }}
+
+    steps:
+      # Checkout the repository with fetch-depth set to 0 and fetch-tags set to
+      # true
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+          
+      - name: 🧰 Checkout Repository
+        id: checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Tag Commit
+        id: tag-commit
+        uses: issue-ops/semver@e58d2f490332e0310a78e9a0e935d8d6f898e9e3 # v3.0.0
+        with:
+          manifest-path: package.json
+          workspace: ${{ github.workspace }}
+          ref: main
+
+      - name: Print version
+        run: echo ${{ steps.tag-commit.outputs.version }}

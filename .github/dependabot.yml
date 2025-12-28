@@ -24,10 +24,6 @@ updates:
     pull-request-branch-name:
       separator: /
     rebase-strategy: auto
-    ignore:
-      - dependency-name: "*"
-        # yamllint disable-line rule:quoted-strings
-        update-types: ["version-update:semver-major"]
 
   # --- Python (pip) ---
   - package-ecosystem: pip
@@ -54,10 +50,6 @@ updates:
     allow:
       - dependency-type: direct
       - dependency-type: indirect
-    ignore:
-      - dependency-name: "*"
-        # yamllint disable-line rule:quoted-strings
-        update-types: ["version-update:semver-major"]
 
   # --- Docker ---
   - package-ecosystem: docker
@@ -72,10 +64,6 @@ updates:
       include: scope
     open-pull-requests-limit: 5
     rebase-strategy: auto
-    ignore:
-      - dependency-name: "*"
-        # yamllint disable-line rule:quoted-strings
-        update-types: ["version-update:semver-major"]
 
   # --- npm (for some tools) ---
   - package-ecosystem: npm
@@ -99,7 +87,3 @@ updates:
     pull-request-branch-name:
       separator: /
     rebase-strategy: auto
-    ignore:
-      - dependency-name: "*"
-        # yamllint disable-line rule:quoted-strings
-        update-types: ["version-update:semver-major"]

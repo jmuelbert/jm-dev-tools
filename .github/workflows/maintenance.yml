@@ -19,6 +19,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  repolinter-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Run Repolinter
+        uses: newrelic/repolinter-action@3f4448f855c351e9695b24524a4111c7847b84cb # v1.7.0
+
   maintenance:
     name: Repository Cleanup
     runs-on: ubuntu-latest
@@ -85,29 +99,3 @@ jobs:
 
           delete-branch: true
           enable-statistics: true
-
-      - name: 🔐 Lock Inactive Threads
-        id: lock
-        uses: dessant/lock-threads@1bf7ec25051fe7c00bdd17e6a7cf3d7bfb7dc771 # v5.0.1
-        with:
-          issue-inactive-days: 182 # 6 months
-          pr-inactive-days: 90 # 3 months
-          issue-comment: |
-            This issue has been locked due to 6 months of inactivity.
-            Please open a new issue if you have a similar problem.
-          pr-comment: |
-            This PR has been locked due to 3 months of inactivity.
-            Please open a new PR if you want to make similar changes.
-          log-output: true
-          exclude-any-issue-labels: |
-            keep-unlocked
-            security
-          exclude-any-pr-labels: |
-            keep-unlocked
-            security
-            dependencies
-
-      - name: 📢 Maintenance Completed
-        run: |
-          echo "Maintenance workflow finished on $(date)."
-          echo "Check workflow logs for stale/locked issues and PRs."

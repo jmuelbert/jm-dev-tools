@@ -77,20 +77,3 @@ jobs:
           uv sync --extra dev
           uv run mike deploy "$VERSION" --push --update-aliases latest
           uv run mike set-default latest || echo "No 'latest' alias yet"
-
-  verify:
-    needs: [build-and-deploy]
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
-        with:
-          egress-policy: audit
-
-      - name: ✅ Verify Workflow Completion
-        uses: re-actors/alls-green@2765efec08f0fd63e83ad900f5fd75646be69ff6 # v1.2.2
-        with:
-          jobs: ${{ toJSON(needs) }}

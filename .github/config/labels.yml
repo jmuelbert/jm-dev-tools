@@ -2,6 +2,39 @@
 # .github/config/labels.yml
 #
 # yamllint disable rule:quoted-strings
+#  --- Standard Labels ---
+- name: "bug"
+  color: "#d73a4a"
+  description: "Something isn't working"
+- name: "documentation"
+  color: "#0075ca"
+  description: "Improvements or additions to documentation"
+- name: "duplicate"
+  color: "#cfd8d7"
+  description: "This issue or pull request already exists"
+- name: "enhancement"
+  color: "#a22eef"
+- name: "wontfix_it"
+  color: "#000000"
+  description: "This will not be worked on"
+  from_name: "wontfix"
+# --- Additional Labels ---
+- name: "enhancement"
+  color: "#a22eef"
+- name: "wontfix_it"
+  color: "#000000"
+  description: "This will not be worked on"
+  from_name: "wontfix"
+- name: "documentation"
+  color: "#0075ca"
+  description: "Improvements or additions to documentation"
+- name: "duplicate"
+  color: "#cfd8d7"
+  description: "This issue or pull request already exists"
+- name: "bug"
+  color: "#d73a4a"
+  description: "Something isn't working"
+# --- Additional
 - name: type/feat
   color: "0E8A16"
   description: A new feature or enhancement.

@@ -15,7 +15,7 @@ on:
 
 jobs:
   megalinter:
-    name: Linting
+    name: 📊 Linting
     runs-on: ubuntu-latest
 
     # Give the default GITHUB_TOKEN read permission only

@@ -42,8 +42,83 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: 📝 Lint Commit Messages
-      #   uses: conventional-changelog/commitlint-action@v4
+      - name: Setup node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install commitlint
+        run: npm install -D @commitlint/cli @commitlint/config-conventional
+      - name: Print versions
+        run: |
+          git --version
+          node --version
+          npm --version
+          npx commitlint --version
+
+      - name: Validate current commit (last commit) with commitlint
+        if: github.event_name == 'push'
+        run: npx commitlint --last --verbose
+
+      - name: Validate PR commits with commitlint
+        if: github.event_name == 'pull_request'
+        run: npx commitlint --from ${{ github.event.pull_request.
+
+  malcontent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔒 Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
+      - name: 🧰 Checkout Repository
+        id: checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 2  # Need HEAD and HEAD~1
+
+      - name: Malcontent GitHub Action
+        id: malcontent
+        uses: chainguard-dev/malcontent-action@053384afe0bb069ba7e2996bd8c0863731406002  # v0.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-increase: false  # Handle manually based on risk delta
+
+      - name: Check risk delta
+        run: |
+          echo "Risk changed by: ${{ steps.malcontent.outputs.risk-delta }} points"
+          if [[ "${{ steps.malcontent.outputs.risk-increased }}" == "true" ]]; then
+            echo "⚠️ Security risk increased!"
+
+      # Fail only on significant risk increase (>10 points)
+      - name: Evaluate risk threshold
+        if: steps.malcontent.outputs.risk-delta > 10
+        run: |
+          echo "::error::Significant security risk increase detected!"
+          exit 1
+
+      # Or use different thresholds for different actions
+      - name: Request security review
+        if: steps.malcontent.outputs.risk-delta > 5 && steps.malcontent.outputs.risk-delta <= 10
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['security-review']
+            })
+
+
+      - name: 📤 Upload to maleware-scanning
+        uses: github/codeql-action/upload-sarif@45c373516f557556c15d420e3f5e0aa3d64366bc # v3.31.9
+        if: always() # Upload even if the malcontent check fails
+        with:
+          sarif_file: ${{ steps.malcontent.outputs.sarif-file }}
+          category: malcontent
 
   analyze-pr:
     name: Analyze and Manage Pull Request
@@ -66,29 +141,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: 🔄 Check Merge Conflicts
-      #   id: conflicts
-      #   uses: eps1lon/actions-label-merge-conflict@v3
-      #   # e62d7a53ff8be8b97684bffb6cfbbf3fc1115e2e # v3.0.0
-      #   timeout-minutes: 5
-      #   continue-on-error: true
-      #   with:
-      #     dirtyLabel: "status: has-conflicts"
-      #     repoToken: ${{ secrets.GITHUB_TOKEN }}
-      #     commentOnDirty: |
-      #       ⚠️ This pull request has conflicts with the target branch. Please resolve the conflicts by following these steps:
-      #       1. Fetch the latest changes.
-      #       2. Merge the target branch into your branch.
-      #       3. Resolve the conflicts.
-      #       4. Push the changes back.
+      - name: Malcontent GitHub Action
+        uses: chainguard-dev/malcontent-action@053384afe0bb069ba7e2996bd8c0863731406002  # v0.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      #       Need help? Check the [Contributing Guide](../../CONTRIBUTING.md) or ask for assistance.
-      #     commentOnClean: |
-      #       ✅ All conflicts have been resolved. A maintainer will review your PR shortly.
+      - name: 📤 Upload to maleware-scanning
+        uses: github/codeql-action/upload-sarif@45c373516f557556c15d420e3f5e0aa3d64366bc # v3.31.9
+        if: always() # Upload even if the malcontent check fails
+        with:
+          sarif_file: ${{ steps.malcontent.outputs.sarif-file }}
+          category: malcontent
+
 
       - name: 🔄 Check Merge Conflicts
         id: conflicts
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const pr = context.payload.pull_request;
@@ -100,42 +168,6 @@ jobs:
                 labels: ['merge-conflict']
               });
             }
-
-      # - name: 📏 Analyze Pull Request Size
-      #   id: size
-      #   uses: codelytv/pr-size-labeler@v1
-      #   # 1c3422395d899286d5ee2c809fd5aed264d5eb9b # v1.10.2
-      #   timeout-minutes: 5
-      #   continue-on-error: true
-      #   with:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     xs_label: size/xs
-      #     xs_max_size: "10"
-      #     s_label: size/s
-      #     s_max_size: "100"
-      #     m_label: size/m
-      #     m_max_size: "500"
-      #     l_label: size/l
-      #     l_max_size: "1000"
-      #     xl_label: size/xl
-      #     fail_if_xl: false
-      #     message_if_xl: |
-      #       ⚠️ This PR is quite large (over 1000 lines). Please consider:
-      #       - Breaking it into smaller, focused PRs
-      #       - Ensuring all changes are related and well-documented
-      #       - Adding detailed documentation for reviewers
-
-      #       Large PRs may require additional review time and scrutiny.
-      #     files_to_ignore: |
-      #       **/test/**
-      #       **/tests/**
-      #       **/doc/**
-      #       **/docs/**
-      #       **/*.md
-      #       package-lock.json
-      #       pnpm-lock.yaml
-      #       uv.lock
-      #       poetry.lock
 
       - name: 🏷️ Apply Scope Labels
         id: labeler
@@ -216,15 +248,8 @@ jobs:
         with:
           egress-policy: audit
 
-      # - name: ✅ Verify Workflow Completion
-      #   uses: re-actors/alls-green@release/v1
-      #   # 05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
-      #   with:
-      #     allowed-skips: commit-lint, analyze-pr, dependency-review
-      #     jobs: ${{ toJSON(needs) }}
-
       - name: 🌟 Add Label on All Green
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const pr = context.payload.pull_request;
