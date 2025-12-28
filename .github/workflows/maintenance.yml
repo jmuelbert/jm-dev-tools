@@ -28,7 +28,7 @@ jobs:
           egress-policy: audit
 
       - name: 🧰 Checkout Repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Run Repolinter
         uses: newrelic/repolinter-action@3f4448f855c351e9695b24524a4111c7847b84cb # v1.7.0
@@ -49,7 +49,7 @@ jobs:
           egress-policy: audit
 
       - name: 🧰 Checkout Repository
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
