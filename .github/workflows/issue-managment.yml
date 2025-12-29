@@ -54,4 +54,4 @@ jobs:
           # Use a separate file for the script to improve readability and maintainability
           script: |
             const script = require('./.github/scripts/issue-handler.js');
-            await script.default({ github, context, core, workspace: process.env.GITHUB_WORKSPACE });
+            await script.default({ github, context, core, ${{env.GITHUB_WORKSPACE }});

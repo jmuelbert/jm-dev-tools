@@ -188,7 +188,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/pr-automation.js');
-            await script.default({ github, context, min_coverage: env.MIN_COVERAGE });
+            await script.default({ github, context, ${{env.MIN_COVERAGE}}  });
 
   dependency-review:
     name: Dependency Review
@@ -230,9 +230,9 @@ jobs:
             await script.default({
               github,
               context,
-              dep: process.env.DEPENDENCY_CHANGES,
-              workspace: process.env.GITHUB_WORKSPACE,
-              vul: process.env.VULNERABLE_CHANGES,
-              lic: process.env.LICENSE_CHANGES,
-              den: process.env.DENIED_CHANGES
+              ${{env.DEPENDENCY_CHANGES}},
+              ${{env.GITHUB_WORKSPACE}},
+              ${{env.VULNERABLE_CHANGES}},
+              ${{env.LICENSE_CHANGES}},
+              ${{env.DENIED_CHANGES}}
             });
