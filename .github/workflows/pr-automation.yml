@@ -1,6 +1,6 @@
 ---
 # SPDX-License-Identifier: EUPL-1.2
-# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
 name: Pull Request Automation
 
@@ -118,7 +118,6 @@ jobs:
               repo: context.repo.repo,
               labels: ['security-review']
             })
-
 
   analyze-pr:
     name: Analyze and Manage Pull Request

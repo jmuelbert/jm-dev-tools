@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: EUPL-1.2
-// SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.de>
+// SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
 export default async ({ github, context, core, dep_type, update_type, alert_state }) => {
 	try {

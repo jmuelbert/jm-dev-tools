@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EUPL-1.2
 // SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-// biome-ignore lint/correctness :noUnusedParameters
 export default async ({ github, context, min_coverage }) => {
 	const pr = context.payload.pull_request
 	if (!pr) {

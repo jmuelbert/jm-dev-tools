@@ -1,6 +1,6 @@
 ---
 # SPDX-License-Identifier: EUPL-1.2
-# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
 name: Continuous Delivery
 
@@ -29,7 +29,7 @@ jobs:
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
           egress-policy: audit
-          
+
       - name: 🧰 Checkout Repository
         id: checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1

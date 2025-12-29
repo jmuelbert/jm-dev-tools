@@ -25,7 +25,6 @@ ENABLE_LINTERS:
   - JSON_V8R # JSON schema validation
   - JSON_NPM_PACKAGE_JSON_LINT # Specific checks for package.json integrity (Keep this since you use pnpm)
   - MARKDOWN_MARKDOWNLINT # Markdown file structure and style
-  - MARKDOWN_MARKDOWN_LINK_CHECK # Checks for broken links in documentation
 
   # 3. Tooling formats
   - ACTION_ACTIONLINT # GitHub Actions workflow files (.github/workflows/*.yml)

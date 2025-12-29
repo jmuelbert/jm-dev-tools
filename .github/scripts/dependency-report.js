@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: EUPL-1.2
 // SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-// biome-ignore lint/correctness :noUnusedParameters
 export default async ({ github, context, dep_changes, vul_changes, lic_changes, den_changes }) => {
 	const outputs = {
 		dependencyChanges: JSON.parse(dep_changes || '[]'),

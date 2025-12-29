@@ -1,60 +1,74 @@
 ---
 # .github/config/labeler.yml
 
-type/feat:
-  - any:
-      - "**/*.py"
-      - "**/feat/**"
-      - "**/feature/**"
-
-type/fix:
-  - any:
-      - "**/*.py"
-      - "**/fix/**"
-      - "**/hotfix/**"
-      - "**/bugfix/**"
-
-type/docs:
-  - any:
-      - docs/**/*
-      - "*.md"
-      - "*.markdown"
-      - "*.mdx"
+# Add 'root' label to any root file changes
+# Quotation marks are required for the leading asterisk
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - docs/**
+      - guides/**
+      - '**/*.md'
+      - '**/*.mdx'
+      - '**/*.markdown'
+      - '**/*.asciidoc'
+      - '**/*.adoc'
       - mkdocs.yml
 
-type/test:
-  - any:
-      - "**/tests/**"
-      - "**/test/**"
-      - "**/*_test.py"
-      - conftest.py
-
-type/ci:
-  - any:
-      - .github/workflows/**
-      - .github/actions/**
-      - .gitlab-ci.yml
-      - .travis.yml
+source:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**/*'
+    - all-globs-to-all-files: '!src/docs/*'
 
 dependencies:
   - any:
       - pyproject.toml
       - requirements.txt
       - package.json
-      - "*-lock.*"
+      - '*-lock.*'
       - poetry.lock
       - pnpm-lock.yaml
-      - .pre-commit-config.yaml
 
-type/chore:
-  - any:
-      - .editorconfig
-      - .gitignore
-      - Taskfile.yml
-      - package.json
-      - .github/workflows/**
-      - bin/**
-      - .yamllint
-      - LICENSE*
-      - LICENSES/**
-      - REUSE.toml
+feature:
+  - head-branch: ['^feat', 'feature']
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/feat/**'
+        - '**/feature/**'
+
+fix:
+  - head-branch: ['^fix', 'hotfix', 'bugfix']
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/fix/**'
+        - '**/hotfix/**'
+        - '**/bugfix/**'
+
+test:
+  - changed-files:
+      - any-glob-to-any-file:
+        - '**/tests/**'
+        - '**/test/**'
+        - '**/*_test.py'
+        - conftest.py
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+        - .github/workflows/**
+        - .github/actions/**
+
+chore:
+  - changed-files:
+      - any-glob-to-any-file:
+        - .editorconfig
+        - .gitignore
+        - Taskfile.yml
+        - bin/**
+        - .yamllint
+        - LICENSE*
+        - LICENSES/**
+        - REUSE.toml
+
+release:
+  - base-branch: 'main'
