@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: EUPL-1.2
-// SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
+// SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@outlook.de>
 
-export default async ({ github, context, core}) => {
-	const minCoverage = process.env.min_coverage
-
+// biome-ignore lint/correctness :noUnusedParameters
+export default async ({ github, context }) => {
 	const pr = context.payload.pull_request
 	if (!pr) {
 		console.log('Not a pull request event. Exiting.')
@@ -11,6 +10,8 @@ export default async ({ github, context, core}) => {
 	}
 
 	const labels = new Set(pr.labels.map((l) => l.name))
+	/* eslint-disable-next-line no-undef */
+	const minCoverage = process.env.MIN_COVERAGE
 
 	// --- Labeling based on title and body ---
 	// Enhanced title parsing with regex

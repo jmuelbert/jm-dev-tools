@@ -5,70 +5,72 @@
 # Quotation marks are required for the leading asterisk
 documentation:
   - changed-files:
-    - any-glob-to-any-file:
-      - docs/**
-      - guides/**
-      - '**/*.md'
-      - '**/*.mdx'
-      - '**/*.markdown'
-      - '**/*.asciidoc'
-      - '**/*.adoc'
-      - mkdocs.yml
+      - any-glob-to-any-file:
+          - docs/**
+          - guides/**
+          - "**/*.md"
+          - "**/*.mdx"
+          - "**/*.markdown"
+          - "**/*.asciidoc"
+          - "**/*.adoc"
+          - "**/*.rst"
+          - "**/*.txt"
+          - mkdocs.yml
 
 source:
   - changed-files:
-    - any-glob-to-any-file: 'src/**/*'
-    - all-globs-to-all-files: '!src/docs/*'
+      - any-glob-to-any-file: src/**/*
+      - all-globs-to-all-files: "!src/docs/*"
 
 dependencies:
   - any:
       - pyproject.toml
       - requirements.txt
       - package.json
-      - '*-lock.*'
+      - "*-lock.*"
       - poetry.lock
       - pnpm-lock.yaml
 
 feature:
-  - head-branch: ['^feat', 'feature']
+  - head-branch: [^feat, feature]
   - changed-files:
       - any-glob-to-any-file:
-        - '**/feat/**'
-        - '**/feature/**'
+          - "**/feat/**"
+          - "**/feature/**"
 
 fix:
-  - head-branch: ['^fix', 'hotfix', 'bugfix']
+  - head-branch: [^fix, hotfix, bugfix]
   - changed-files:
       - any-glob-to-any-file:
-        - '**/fix/**'
-        - '**/hotfix/**'
-        - '**/bugfix/**'
+          - "**/fix/**"
+          - "**/hotfix/**"
+          - "**/bugfix/**"
 
 test:
   - changed-files:
       - any-glob-to-any-file:
-        - '**/tests/**'
-        - '**/test/**'
-        - '**/*_test.py'
-        - conftest.py
+          - "**/tests/**"
+          - "**/test/**"
+          - "**/*_test.py"
+          - conftest.py
 
 ci:
   - changed-files:
       - any-glob-to-any-file:
-        - .github/workflows/**
-        - .github/actions/**
+          - .github/workflows/**
+          - .github/actions/**
 
 chore:
   - changed-files:
       - any-glob-to-any-file:
-        - .editorconfig
-        - .gitignore
-        - Taskfile.yml
-        - bin/**
-        - .yamllint
-        - LICENSE*
-        - LICENSES/**
-        - REUSE.toml
+          - .editorconfig
+          - .gitignore
+          - Taskfile.yml
+          - bin/**
+          - .yamllint
+          - LICENSE*
+          - LICENSES/**
+          - REUSE.toml
 
 release:
-  - base-branch: 'main'
+  - base-branch: main

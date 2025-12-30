@@ -3,14 +3,14 @@
 ## main
 
 Purpose: This is your production-ready branch. It should always contain stable
-code that is ready for deployment. Usage: Only merge into this branch when you
+code that's ready for deployment. Usage: Only merge into this branch when you
 are confident that the code is stable and ready for release.
 
 ## develop
 
 Purpose: This branch is for ongoing development. It serves as the integration
 branch for features and fixes. Usage: Merge feature branches into this branch
-when they are complete and tested.
+when they're complete and tested.
 
 ## feat/
 

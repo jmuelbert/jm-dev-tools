@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: EUPL-1.2
 // SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-export default async ({ github, context, core }) => {
+export default async ({ github, context }) => {
 	// Zugriff auf die Parameter über process.env
 	const outputs = {
+		/* eslint-disable-next-line no-undef */
 		dependencyChanges: JSON.parse(process.env.DEPENDENCY_CHANGES || '[]'),
+		/* eslint-disable-next-line no-undef */
 		vulnerableChanges: JSON.parse(process.env.VULNERABLE_CHANGES || '[]'),
+		/* eslint-disable-next-line no-undef */
 		licenseChanges: JSON.parse(process.env.LICENSE_CHANGES || '[]'),
-		deniedChanges: JSON.parse(process.env.DENIED_CHANGES || '[]')
+		/* eslint-disable-next-line no-undef */
+		deniedChanges: JSON.parse(process.env.DENIED_CHANGES || '[]'),
 	}
 
 	let report = '## 📋 Pull Request Dependency Review Report\n\n'

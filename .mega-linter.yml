@@ -81,6 +81,11 @@ REPOSITORY_TRIVY_ARGUMENTS:
   - --skip-dirs
   - .venv
 
+# Powershell Analyzer JSON_PRETTIER_COMMAND_REMOVE_ARGUMENTS:
+POWERSHELL_POWERSHELL_ARGUMENTS:
+  - -ExcludeRule
+  - PSUseUTF8Encoding
+
 # --- Exclusion List (To avoid running on third-party folders) ---
 EXCLUDED_DIRECTORIES:
   - node_modules

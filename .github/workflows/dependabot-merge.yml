@@ -64,7 +64,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/add-labels.js');
-            await script.default({ github, context, core, ${{env.DEPENDENCY_TYPE}}, ${{env.UPDATE_TYPE}}, ${{env.ALERT_STATE}});
+            await script.default({ github, context, core });
 
       - name: ✅ Auto-approve PR
         id: approve

@@ -1,6 +1,3 @@
-The home page (index.md) is your project's welcome mat. It should be concise and
-compelling. Include:
-
 # A Catchy Title
 
 The project's name.
@@ -8,6 +5,8 @@ The project's name.
 ## A Brief Description
 
 What the project does.
+The home page (index.md) is your project's welcome mat. It should be concise and
+compelling. Include:
 
 ## Key Features
 

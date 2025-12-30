@@ -1,8 +1,8 @@
 # Reference
 
-## jmbde
+## jm-dev-tools
 
 ```{eval-rst}
-.. automodule:: jmbde
+.. automodule:: jm-dev-tools
    :members:
 ```

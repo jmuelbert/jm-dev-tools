@@ -1,4 +1,4 @@
-# 🚀 Developer Guide: jm-dev-tools
+# 🚀 Developer Guide
 
 This guide provides instructions for setting up the project and running common tasks (build, test, quality checks).
 
@@ -8,7 +8,8 @@ This guide provides instructions for setting up the project and running common t
 
 The primary technologies detected in this repository are: **Node.js/JavaScript,Python**.
 
-> ⚠️ **Polyglot Project:** This repository contains both Python and Node.js components. Ensure both environments are set up correctly.
+> ⚠️ **Polyglot Project:** This repository contains both Python and Node.js components. Ensure both environments are set
+> up correctly.
 
 ## 2. Environment Setup
 

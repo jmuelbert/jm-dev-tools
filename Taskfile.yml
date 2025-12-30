@@ -58,10 +58,10 @@ tasks:
         mkdir -p .tmp
         echo "Fetching latest devguide-generator.sh from GitHub..."
         # Download Bash script for Unix-like systems
-        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scripts/devguide-generator.sh \
+        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scr/scripts/devguide-generator.sh \
         -o .tmp/devguide-generator.sh
         # Download PowerShell script for Windows
-        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scripts/Invoke-DevGuideGeneration.ps1 \
+        curl -fsSL https://raw.githubusercontent.com/jmuelbert/jm-dev-tools/main/scr/scripts/Invoke-DevGuideGeneration.ps1 \
         -o .tmp/Invoke-DevGuideGeneration.ps1
     silent: true
 
@@ -153,8 +153,7 @@ tasks:
       - task: _log
         vars: { MSG: 🧪 Running pwsh-script linting..., TYPE: info }
       - pwsh -NoProfile -Command " Import-Module -Name PSScriptAnalyzer;
-        Invoke-ScriptAnalyzer -Path './**/*.ps1' -Severity Warning -EnableExit
-        -Settings './PSScriptAnalyzerSettings.psd1'; "
+        Invoke-ScriptAnalyzer -Path 'src/'"
 
   lint-yaml:
     desc: Runs yamllint to check all YAML files.
@@ -186,7 +185,7 @@ tasks:
       - task: _log
         vars: { MSG: 🧪 Linting all..., TYPE: info }
       - task: lint-pwsh
-      - shellcheck ./scripts/*.sh
+      - shellcheck ./src/scripts/*.sh
       - task: lint-yaml
       - task: lint-docs
       - task: _log
@@ -205,7 +204,7 @@ tasks:
       - task: _log
         vars: { MSG: 🎨 Running formatters..., TYPE: info }
       - task: format-pwsh
-      - shfmt -l -w ./scripts/*.sh
+      - shfmt -l -w ./src/scripts/*.sh
       - pnpm run format
 
   # ====================================================================

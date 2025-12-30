@@ -6,44 +6,126 @@ name: Continuous Delivery
 
 # yamllint disable-line rule:truthy
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - main
+  workflow_dispatch:
+  release:
+    types: [published]
+  issues:
+    types: [closed]
+  schedule:
+    - cron: 30 8 * * *
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  release:
-    name: Release Version
+  notify-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-    # Only run this job if the PR was merged
-    if: ${{ github.event.pull_request.merged == true }}
-
+      issues: write
+      contents: read
     steps:
-      # Checkout the repository with fetch-depth set to 0 and fetch-tags set to
-      # true
       - name: 🔒 Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
         with:
           egress-policy: audit
 
-      - name: 🧰 Checkout Repository
-        id: checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          fetch-depth: 0
-          fetch-tags: true
+      - name: 📝 Notify release
+        uses: nearform-actions/github-action-notify-release@1a1c03a2b8c9a41a7a88f9a8de05b2b6582f0966 # v1.12.2
 
-      - name: Tag Commit
-        id: tag-commit
-        uses: issue-ops/semver@e58d2f490332e0310a78e9a0e935d8d6f898e9e3 # v3.0.0
+      - name: Create release with filtered changelog
+        uses: actions/github-script@v6
         with:
-          manifest-path: package.json
-          workspace: ${{ github.workspace }}
-          ref: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
 
-      - name: Print version
-        run: echo ${{ steps.tag-commit.outputs.version }}
+            // Helper: check if commit message starts with allowed prefixes
+            function isMeaningfulCommit(message) {
+              const prefixes = ['break', 'feat', 'fix', 'perf', 'refactor', ];
+              const lowerMsg = message.toLowerCase();
+              return prefixes.some(prefix => lowerMsg.startsWith(prefix));
+            }
+
+            // Get the latest release
+            let latestRelease;
+            try {
+              latestRelease = await github.rest.repos.getLatestRelease({ owner, repo });
+            } catch (error) {
+              if (error.status === 404) {
+                core.info('No previous release found, treating as first release.');
+              } else {
+                throw error;
+              }
+            }
+
+            const latestTag = latestRelease?.data.tag_name || null;
+            core.info(`Latest release tag: ${latestTag || 'none'}`);
+
+            // Get commits since the latest release tag or recent commits if none
+            let commits;
+            if (latestTag) {
+              // Get the commit date of the latest tag
+              const latestTagCommit = await github.rest.repos.getCommit({
+                owner,
+                repo,
+                ref: latestTag,
+              });
+              const latestTagDate = latestTagCommit.data.commit.author.date;
+
+              // List commits on default branch since latest tag date
+              commits = await github.paginate(
+                github.rest.repos.listCommits,
+                {
+                  owner,
+                  repo,
+                  sha: context.payload.repository.default_branch,
+                  since: latestTagDate,
+                }
+              );
+            } else {
+              // No previous release, get last 30 commits on default branch
+              commits = await github.rest.repos.listCommits({
+                owner,
+                repo,
+                sha: context.payload.repository.default_branch,
+                per_page: 30,
+              }).then(res => res.data);
+            }
+
+            // Filter commits by message prefix
+            const filteredCommits = commits.filter(c => {
+              const message = c.commit.message.split('\n')[0];
+              return isMeaningfulCommit(message);
+            });
+
+            if (filteredCommits.length === 0) {
+              core.info('No meaningful commits since last release.');
+              return;
+            }
+
+            // Generate changelog lines from filtered commits
+            const changelogLines = filteredCommits.map(c => {
+              const shortSha = c.sha.substring(0, 7);
+              const message = c.commit.message.split('\n')[0];
+              return `- ${message} (${shortSha})`;
+            });
+
+            const changelog = changelogLines.join('\n');
+
+            // Get new tag from the ref that triggered the workflow
+            const newTag = context.ref.replace('refs/tags/', '');
+            core.info(`Creating release for tag: ${newTag}`);
+
+            // Create the release
+            await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: newTag,
+              name: newTag,
+              body: `## Changelog\n\n${changelog}`,
+              draft: false,
+              prerelease: false,
+            });
+
+            core.info('Release created successfully.');

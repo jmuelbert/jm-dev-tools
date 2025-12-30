@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: EUPL-1.2
 // SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-export default async ({ github, context, core, dep_type, update_type, alert_state }) => {
+export default async ({ github, context, core }) => {
 	try {
-		const dependencyType = dep_type
-		const updateType = update_type
-		const alertState = alert_state
+		/* eslint-disable-next-line no-undef */
+		const dependencyType = JSON.parse(process.env.DEPENDENCY_TYPE || '""')
+		/* eslint-disable-next-line no-undef */
+		const updateType = JSON.parse(process.env.UPDATE_TYPE || '""')
+		/* eslint-disable-next-line no-undef */
+		const alertState = JSON.parse(process.env.ALERT_STATE || '""')
 
 		const labels = []
 
