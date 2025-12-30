@@ -84,7 +84,7 @@ REPOSITORY_TRIVY_ARGUMENTS:
 # Powershell Analyzer JSON_PRETTIER_COMMAND_REMOVE_ARGUMENTS:
 POWERSHELL_POWERSHELL_ARGUMENTS:
   - -ExcludeRule
-  - PSUseUTF8Encoding
+  - PSUseBOMForUnicodeEncodedFile
 
 # --- Exclusion List (To avoid running on third-party folders) ---
 EXCLUDED_DIRECTORIES:
@@ -101,3 +101,8 @@ SPELL_CSPELL_PRE_COMMANDS:
   - command: echo "Preparing cspell..."
   - command: npm install
   - command: echo "Pre-command completed."
+
+PRE_COMMANDS:
+  - command: npm install @cspell/dict-de-de @cspell/dict-es-es @cspell/dict-it-it
+    cwd: "root"        # Will be run at the root of MegaLinter docker image
+    secured_env: true  # True by default, but if defined to false, no global variable will be hidden (for example if you need GITHUB_TOKEN)
