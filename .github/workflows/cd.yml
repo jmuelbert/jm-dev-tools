@@ -14,6 +14,7 @@ on:
   schedule:
     - cron: 30 8 * * *
 
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -34,7 +35,7 @@ jobs:
         uses: nearform-actions/github-action-notify-release@1a1c03a2b8c9a41a7a88f9a8de05b2b6582f0966 # v1.12.2
 
       - name: Create release with filtered changelog
-        uses: actions/github-script@v6
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
