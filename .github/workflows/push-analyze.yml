@@ -2,12 +2,14 @@
 # SPDX-License-Identifier: EUPL-1.2
 # SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-name: Pull Request Automation
+name: Push Analysis
 
 # yamllint disable-line rule:truthy
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+      - develop
     paths-ignore:
       - "**.md"
       - docs/**
@@ -22,16 +24,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  analyze-pr:
-    name: Analyze and Manage Pull Request
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+  analyze-push:
+    name: Analyze Push
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-      security-events: read
 
     steps:
       - name: 🔒 Harden Runner
@@ -43,12 +39,6 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 2
-
-      - name: Setup node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: lts/*
-          cache: npm
 
       - name: Install commitlint
         run: npm install -D @commitlint/cli @commitlint/config-conventional
@@ -122,65 +112,3 @@ jobs:
                 labels: ['merge-conflict']
               });
             }
-
-      - name: 🏷️ Apply Scope Labels
-        id: labeler
-        uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
-        timeout-minutes: 5
-        continue-on-error: true
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          configuration-path: .github/config/labeler.yml
-          sync-labels: true
-
-      - name: 📝 Run PR Automation Script
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        id: pr-script
-        env:
-          MIN_COVERAGE: 51
-        with:
-          script: |
-            const script = require('./.github/scripts/pr-automation.js');
-            await script.default({ github, context}  });
-
-  dependency-review:
-    name: Dependency Review
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-
-    steps:
-      - name: 🔒 Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
-        with:
-          egress-policy: audit
-
-      - name: 🧰 Checkout Repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Dependency Review
-        id: review
-        uses: actions/dependency-review-action@3c4e3dcb1aa7874d2c16be7d79418e9b7efd6261 # v4.8.2
-        with:
-          # This action now runs with the goal of generating output for the report
-          comment-summary-in-pr: false
-          retry-on-snapshot-warnings: true
-          config-file: .github/config/dependency-review-config.yml
-
-      - name: 📊 Generate and Post Report
-        if: always()
-        env:
-          DEPENDENCY_CHANGES: ${{ steps.review.outputs.dependency-changes }}
-          VULNERABLE_CHANGES: ${{ steps.review.outputs.vulnerable-changes }}
-          LICENSE_CHANGES: ${{ steps.review.outputs.invalid-license-changes }}
-          DENIED_CHANGES: ${{ steps.review.outputs.denied-changes }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        with:
-          script: |
-            const script = require('./.github/scripts/dependency-report.js');
-            await script.default({
-              github,
-              context
-            });

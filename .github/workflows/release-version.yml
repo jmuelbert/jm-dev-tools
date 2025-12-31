@@ -46,4 +46,3 @@ jobs:
 
       - name: Print version
         run: echo ${{ steps.tag-commit.outputs.version }}
-

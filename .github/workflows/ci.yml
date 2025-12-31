@@ -6,7 +6,6 @@ name: Continuous Integration
 
 # yamllint disable-line rule:truthy
 on:
-
   push:
     branches:
       - main

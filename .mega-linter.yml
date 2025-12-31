@@ -85,6 +85,9 @@ REPOSITORY_TRIVY_ARGUMENTS:
 POWERSHELL_POWERSHELL_ARGUMENTS:
   - -ExcludeRule
   - PSUseBOMForUnicodeEncodedFile
+POWERSHELL_POWERSHELL_DISABLE_ERRORS: true
+
+PYTHON_DEFAULT_STYLE: ruff
 
 # --- Exclusion List (To avoid running on third-party folders) ---
 EXCLUDED_DIRECTORIES:
@@ -104,5 +107,5 @@ SPELL_CSPELL_PRE_COMMANDS:
 
 PRE_COMMANDS:
   - command: npm install @cspell/dict-de-de @cspell/dict-es-es @cspell/dict-it-it
-    cwd: "root"        # Will be run at the root of MegaLinter docker image
-    secured_env: true  # True by default, but if defined to false, no global variable will be hidden (for example if you need GITHUB_TOKEN)
+    cwd: root # Will be run at the root of MegaLinter docker image
+    secured_env: true # True by default, but if defined to false, no global variable will be hidden (for example if you need GITHUB_TOKEN)
