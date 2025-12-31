@@ -141,7 +141,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/pr-automation.js');
-            await script.default({ github, context}  });
+            await script.default({ github, context });
 
   dependency-review:
     name: Dependency Review
