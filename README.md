@@ -15,7 +15,7 @@ guide provides instructions for setting up the project and running common tasks
 
 ## 🚀 Installation
 
-Install the script(s) whereever you want.
+Install the script whereever you want.
 
 ## 💡 Quick Start & Usage
 
@@ -42,7 +42,7 @@ assurance, CI/CD, and maintainability:
 ## 📘 Further Information
 
 - **Documentation:** For a deep dive into configuration and advanced usage,
-  please refer to our [documentation].
+  please refer the [documentation].
 - **Contributing:** We welcome contributions! Please read our [contributing
   guidelines] for more information.
 - **License:** This project is licensed under the [EUPL V1.2 license].
@@ -57,8 +57,8 @@ assurance, CI/CD, and maintainability:
 [wf-docs-deploy-badge]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/docs-deploy.yml/badge.svg
 [wf-dependabot-merge]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/dependabot-merge.yml
 [wf-dependabot-merge-badge]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/dependabot-merge.yml/badge.svg
-[wf-megalinter]: https://github.com/jmuelbert/jm-bde-python/actions/workflows/megalinter.yml
-[wf-megalinter-badge]: https://github.com/jmuelbert/jm-bde-python/actions/workflows/megalinter.yml/badge.svg
+[wf-megalinter]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/megalinter.yml
+[wf-megalinter-badge]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/megalinter.yml/badge.svg
 [wf-maintenance]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/maintenance.yml
 [wf-maintenance-badge]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/maintenance.yml/badge.svg
 [wf-pr-automation]: https://github.com/jmuelbert/jm-dev-tools/actions/workflows/pr-automation.yml

@@ -1,8 +1,14 @@
+---
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
+
 name: Monthly contributor report
+
+# yamllint disable-line rule:truthy
 on:
   workflow_dispatch:
   schedule:
-    - cron: "3 2 1 * *"
+    - cron: 3 2 1 * *
 
 permissions:
   contents: read

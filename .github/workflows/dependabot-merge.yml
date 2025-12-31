@@ -1,6 +1,6 @@
 ---
-# SPDX-FileCopyrightText: GitHub, Inc. and contributors
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
 name: Dependabot Auto-Merge
 
@@ -54,7 +54,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🏷️ Add Labels
+      - name: 🏷️ Add Labels for Dependabot PRs
         id: labels
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         env:
@@ -64,7 +64,7 @@ jobs:
         with:
           script: |
             const script = require('./.github/scripts/add-labels.js');
-            await script.default({ github, context, core, ${{env.DEPENDENCY_TYPE}}, ${{env.UPDATE_TYPE}}, ${{env.ALERT_STATE}});
+            await script.default({ github, context, core });
 
       - name: ✅ Auto-approve PR
         id: approve

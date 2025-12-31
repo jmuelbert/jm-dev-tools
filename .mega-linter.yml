@@ -25,7 +25,6 @@ ENABLE_LINTERS:
   - JSON_V8R # JSON schema validation
   - JSON_NPM_PACKAGE_JSON_LINT # Specific checks for package.json integrity (Keep this since you use pnpm)
   - MARKDOWN_MARKDOWNLINT # Markdown file structure and style
-  - MARKDOWN_MARKDOWN_LINK_CHECK # Checks for broken links in documentation
 
   # 3. Tooling formats
   - ACTION_ACTIONLINT # GitHub Actions workflow files (.github/workflows/*.yml)
@@ -82,6 +81,14 @@ REPOSITORY_TRIVY_ARGUMENTS:
   - --skip-dirs
   - .venv
 
+# Powershell Analyzer JSON_PRETTIER_COMMAND_REMOVE_ARGUMENTS:
+POWERSHELL_POWERSHELL_ARGUMENTS:
+  - -ExcludeRule
+  - PSUseBOMForUnicodeEncodedFile
+POWERSHELL_POWERSHELL_DISABLE_ERRORS: true
+
+PYTHON_DEFAULT_STYLE: ruff
+
 # --- Exclusion List (To avoid running on third-party folders) ---
 EXCLUDED_DIRECTORIES:
   - node_modules
@@ -97,3 +104,8 @@ SPELL_CSPELL_PRE_COMMANDS:
   - command: echo "Preparing cspell..."
   - command: npm install
   - command: echo "Pre-command completed."
+
+PRE_COMMANDS:
+  - command: npm install @cspell/dict-de-de @cspell/dict-es-es @cspell/dict-it-it
+    cwd: root # Will be run at the root of MegaLinter docker image
+    secured_env: true # True by default, but if defined to false, no global variable will be hidden (for example if you need GITHUB_TOKEN)

@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: EUPL-1.2
 // SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
 
-// biome-ignore lint/correctness :noUnusedParameters
-export default async ({ github, context, dep_changes, vul_changes, lic_changes, den_changes }) => {
+export default async ({ github, context }) => {
+	// Zugriff auf die Parameter über process.env
 	const outputs = {
-		dependencyChanges: JSON.parse(dep_changes || '[]'),
-		vulnerableChanges: JSON.parse(vul_changes || '[]'),
-		licenseChanges: JSON.parse(lic_changes || '[]'),
-		deniedChanges: JSON.parse(den_changes || '[]'),
+		/* eslint-disable-next-line no-undef */
+		dependencyChanges: JSON.parse(process.env.DEPENDENCY_CHANGES || '[]'),
+		/* eslint-disable-next-line no-undef */
+		vulnerableChanges: JSON.parse(process.env.VULNERABLE_CHANGES || '[]'),
+		/* eslint-disable-next-line no-undef */
+		licenseChanges: JSON.parse(process.env.LICENSE_CHANGES || '[]'),
+		/* eslint-disable-next-line no-undef */
+		deniedChanges: JSON.parse(process.env.DENIED_CHANGES || '[]'),
 	}
 
 	let report = '## 📋 Pull Request Dependency Review Report\n\n'
