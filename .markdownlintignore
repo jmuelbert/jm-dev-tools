@@ -1,0 +1,17 @@
+# Ignore all files in the 'styles' directory (Vale)
+.github/config/styles/proselint/
+
+# Ignore all files in the '.pytest_cache' directory
+.pytest_cache
+
+# Ignore all files in the `.venv' directory
+.venv
+
+# Ignore all files in the 'node_modules' directory
+node_modules/
+
+# Ignore the placeholder files
+docs/en/about/changelog.md
+docs/en/community/code_of_conduct.md
+docs/en/community/contributing.md
+docs/en/developer-guide/security.md

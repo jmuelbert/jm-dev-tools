@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: EUPL-1.2
+# SPDX-FileCopyrightText: 2025-present Jürgen Mülbert <juergen.muelbert@gmail.com>
+
+# top-most EditorConfig file
+root = true
+
+# The default section should set rules that apply to all files.
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+charset = utf-8
+max_line_length = 120
+
+# Biome-managed files should use tabs for indentation.
+[*.{js,jsx,ts,tsx,json,jsonc,css,html,graphql}]
+indent_style = tab
+indent_size = 2 # Biome uses this to set the visual width of tabs.
+
+# Files managed by Prettier and other formatters will still use spaces.
+[*.{md,markdown,mdx,adoc,asciidoc,yaml,yml}]
+indent_style = space
+indent_size = 2
+max_line_length = 120 # Prettier's markdown-specific line length
+
+[*.py]
+# Ruff's line length setting
+indent_style = space
+indent_size = 4
+max_line_length = 88

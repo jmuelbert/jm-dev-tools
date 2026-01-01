@@ -1,0 +1,111 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaries": ["en_GB", "en_US", "de-de", "es-es", "it-it", "project-words"],
+  "ignorePaths": [
+    "**/node_modules",
+    "**/*.svg",
+    "**/*.qrc",
+    ".git",
+    ".github/config/styles/Microsoft/**",
+    ".github/config/styles/proselint/**",
+    ".github/config/styles/Readability/**",
+    ".gitignore",
+    ".gitattributes",
+    ".vscode",
+    ".devcontainer",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "cspell.config.yaml",
+    "cspell.json",
+    "project-words.txt",
+    "LICENSE",
+    "LICENSES/"
+  ],
+  "files": [
+    "**/*.md",
+    "**/*.markdown",
+    "**/*.adoc",
+    "**/*.asciidoc",
+    "**/*.htm",
+    "**/*.html",
+    "**/*.json",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/*.toml"
+  ],
+  "words": ["jmuelbert", "Jürgen", "Mülbert"],
+  "flagWords": ["hte", "canot", "cancelled"],
+  "maxNumberOfProblems": 1000,
+  "useGitignore": true,
+  "allowCompoundWords": true,
+  "enableGlobDot": true,
+  "enableFiletypes": ["shellscript", "gitcommit"],
+  "cache": {
+    "useCache": true,
+    "cacheStrategy": "content"
+  },
+  "overrides": [
+    {
+      "filename": "fr/**/*.md",
+      "language": "en,fr"
+    },
+    {
+      "filename": "de/**/*.md",
+      "language": "en,de"
+    },
+    {
+      "filename": "es/**/*.md",
+      "language": "en,es"
+    },
+    {
+      "filename": "it/**/*.md",
+      "language": "en,it"
+    },
+    {
+      "filename": "**/*.md",
+      "language": "en"
+    },
+    {
+      "filename": "package.json",
+      "languageId": "json",
+      "language": "en",
+      "dictionaries": ["npm"]
+    },
+    {
+      "filename": "**/*.toml",
+      "languageId": "toml",
+      "language": "en",
+      "dictionaries": ["toml"]
+    },
+    {
+      "filename": "**/*.txt",
+      "languageId": "text",
+      "language": "en"
+    },
+    {
+      "filename": "**/*.yaml",
+      "languageId": "yaml",
+      "language": "en"
+    },
+    {
+      "filename": "bin/*",
+      "languageId": "bash",
+      "language": "en",
+      "dictionaries": ["bash", "node", "shell"]
+    },
+    {
+      "filename": "**/*.sh",
+      "language": "en",
+      "dictionaries": ["bash", "node", "shell"]
+    }
+  ],
+  "dictionaryDefinitions": [
+    {
+      "name": "project-words",
+      "path": "./project-words.txt",
+      "addWords": true
+    }
+  ],
+  "import": ["@cspell/dict-es-es", "@cspell/dict-de-de", "@cspell/dict-it-it"]
+}
